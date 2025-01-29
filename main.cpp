@@ -360,24 +360,19 @@ void walkback(struct robot_data* robot) {
 //* RECEBE DIRECAO DO ROBO E O   *
 //* FAZ VIRAR `ANGLE` A ESQUERDA *
 //********************************
-void left(int* robotdir)
-{
-	*robotdir += ANGLE;
+void turnRobot(int* robotdir, int direction) {
+    *robotdir += ANGLE * direction; // direction: +1 for left, -1 for right
 
-	if (*robotdir >= 360)
-		*robotdir -= 360;
+    if (*robotdir >= 360)
+        *robotdir -= 360;
 }
 
-//*******************************
-//* RECEBE DIRECAO DO ROBO E O  *
-//* FAZ VIRAR `ANGLE` A DIREITA *
-//*******************************
-void right(int* robotdir)
-{
-	*robotdir -= ANGLE;
+void left(int* robotdir) {
+    turnRobot(robotdir, 1);
+}
 
-	if (*robotdir >= 360)
-		*robotdir -= 360;
+void right(int* robotdir) {
+    turnRobot(robotdir, -1);
 }
 
 //********************************************
