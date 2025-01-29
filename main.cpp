@@ -181,40 +181,49 @@ double fitness(struct robot_data robot, struct ball_data ball)
 	}
 }
 
-//**********************************
-//* RECEBE DADOS DO ROBO E DA BOLA *
-//* E DESCOBRE SE EXISTE OBSTACULO *
-//**********************************
-int obstacle(struct robot_data robot, struct ball_data ball, double angle)
-{
-	double lin, col;
+bool isPathClear(double startLin, double startCol, double angle, int steps) {
+    double testlin = startLin - (steps * sin((PI * angle) / 180));
+    double testcol = startCol + (steps * cos((PI * angle) / 180));
 
+    // Boundary check
+    if (testlin < 1 || testlin > HEIGHT-2 || testcol < 1 || testcol > WIDTH-2) 
+        return false;
 
-	lin = robot.lin;
-	col = robot.col;
+    // Obstacle check
+    if (environment[(int)testlin][(int)testcol])
+        return false;
 
-	if (angle >= 360)        //CORRIGE ANGULO
-		angle = angle - 360;
-	else if (angle < 0)
-		angle = angle + 360;
-
-	while ((int)ball.lin != (int)lin && (int)ball.col != (int)col)
-	{
-		lin = lin - sin((PI * angle) / 180);
-		col = col + cos((PI * angle) / 180);
-
-		if (environment[(int)lin][(int)col] == 2)
-			return(0);
-	}
-
-
-	return(1);
+    return true;
 }
 
-//****************************
-//* RECEBE DIRECAO DO ROBO E *
-//* O DIRECIONA PARA BOLA    *
-//****************************
+int obstacle(struct robot_data robot, struct ball_data ball, double angle) {
+    // Normalize angle
+    while (angle >= 360) angle -= 360;
+    while (angle < 0) angle += 360;
+    
+    double lin = robot.lin;
+    double col = robot.col;
+    
+    // Check path to ball
+    while ((int)ball.lin != (int)lin && (int)ball.col != (int)col) {
+        if (!isPathClear(lin, col, angle, 1))
+            return 0;
+            
+        lin = lin - sin((PI * angle) / 180);
+        col = col + cos((PI * angle) / 180);
+    }
+    
+    return 1;
+}
+
+//**************************************
+//* RECEBE DADOS DO ROBO E SE ELE      *
+//* ESTIVER PROXIMO A PAREDE RETORNA 1 *
+//**************************************
+int ifwall(struct robot_data robot) {
+    return !isPathClear(robot.lin, robot.col, robot.dir, 2);
+}
+
 void align(struct robot_data* robot, struct ball_data ball)
 {
 	double Dlin, Dcol, angle;
@@ -267,24 +276,6 @@ int ifball(struct robot_data robot, struct ball_data ball)
 
 	return (1);
 
-}
-
-//**************************************
-//* RECEBE DADOS DO ROBO E SE ELE      *
-//* ESTIVER PROXIMO A PAREDE RETORNA 1 *
-//**************************************
-int ifwall(struct robot_data robot)
-{
-	double testlin, testcol;
-
-
-	testlin = robot.lin - (2 * sin((PI * robot.dir) / 180));
-	testcol = robot.col + (2 * cos((PI * robot.dir) / 180));
-
-	if (environment[(int)testlin][(int)testcol] || testlin < 1 || testlin > 198 || testcol < 1 || testlin > 198)
-		return(1);
-
-	return(0);
 }
 
 //*********************************
