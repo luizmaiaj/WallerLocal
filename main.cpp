@@ -2340,7 +2340,7 @@ int main(void)
 			fflush(track_files_pointer);
 			fclose(track_files_pointer);  //FECHA ARQUIVO
 
-			sprintf(command, "convert %s caminho%.3d.gif; rm %s -f", filename, number_of_track_files, filename);
+			sprintf(command, "magick %s caminho%.3d.gif; rm %s -f", filename, number_of_track_files, filename);
 
 			system(command);
 
