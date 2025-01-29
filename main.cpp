@@ -1780,6 +1780,24 @@ struct tree* load(struct tree* pointer)
 //*******************************************
 //* DESENHA OBSTACULO NA MATRIZ DO AMBIENTE *
 //*******************************************
+void initializeBall(struct ball_data* ball, int environment[HEIGHT][WIDTH]) {
+    do {
+        ball->col = (int)(rand() % (WIDTH-2)) + 1;
+        ball->lin = (int)(rand() % (HEIGHT-2)) + 1;
+
+        if (environment[(int)ball->lin][(int)ball->col]) {
+            // If position is occupied, randomly adjust either line or column
+            if (rand() % 2) {
+                ball->col = (int)(rand() % (WIDTH-2)) + 1;
+            } else {
+                ball->lin = (int)(rand() % (HEIGHT-2)) + 1;
+            }
+        }
+    } while (environment[(int)ball->lin][(int)ball->col]);
+    
+    environment[(int)ball->lin][(int)ball->col] = 1;
+}
+
 void initializeRobot(struct robot_data* robot, int environment[HEIGHT][WIDTH]) {
     do {
         robot->dir = ANGLE * (rand() % (360 / ANGLE));
@@ -2030,33 +2048,7 @@ int main(void)
 				initializeRobot(&robot, environment);
 
 				environment[(int)robot.lin][(int)robot.col] = 1;
-
-				//POSICAO DA BOLA
-				do
-				{
-					ball.col = (int)(rand() % 198) + 1;
-
-					ball.lin = (int)(rand() % 198) + 1;
-
-					if (environment[(int)ball.lin][(int)ball.col])
-					{
-						char sort;
-
-						sort = (rand() % 2) + 1;
-
-						switch (sort)
-						{
-						case 1:
-							ball.col = (int)(rand() % 198) + 1;
-							break;
-
-						case 2:
-							ball.lin = (int)(rand() % 198) + 1;
-							break;
-						}
-					}
-
-				} while (environment[(int)ball.lin][(int)ball.col]);
+				initializeBall(&ball, environment);
 
 				environment[(int)ball.lin][(int)ball.col] = 1;
 
