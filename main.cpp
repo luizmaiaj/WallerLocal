@@ -84,6 +84,66 @@
 	COMPLEXIDADE DOS INDIVIDUOS E LIMITADA (PARAMETRO `LIMIT`).
 */
 
+class Environment {
+private:
+    int grid[HEIGHT][WIDTH];
+
+public:
+    void initialize() {
+        for (int lin = 0; lin < HEIGHT; lin++) {
+            for (int col = 0; col < WIDTH; col++) {
+                if (lin == 0 || lin == HEIGHT-1 || col == 0 || col == WIDTH-1) {
+                    grid[lin][col] = 2; // Border
+                } else {
+                    grid[lin][col] = 0; // Empty space
+                }
+            }
+        }
+        
+        const int OBSTACLE_SIZE = 16;
+        const int OBSTACLE_POSITIONS[] = {25, 91, 160};
+        
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                int lin = OBSTACLE_POSITIONS[i];
+                int col = OBSTACLE_POSITIONS[j];
+                
+                for (int y = lin; y < lin + OBSTACLE_SIZE; y++) {
+                    for (int x = col; x < col + OBSTACLE_SIZE; x++) {
+                        grid[y][x] = 2;
+                    }
+                }
+            }
+        }
+    }
+
+    bool isPathClear(double startLin, double startCol, double angle, int steps) const {
+        double testlin = startLin - (steps * sin((PI * angle) / 180));
+        double testcol = startCol + (steps * cos((PI * angle) / 180));
+
+        if (testlin < 1 || testlin > HEIGHT-2 || testcol < 1 || testcol > WIDTH-2) 
+            return false;
+
+        if (grid[(int)testlin][(int)testcol])
+            return false;
+
+        return true;
+    }
+
+    void setCell(int lin, int col, int value) {
+        if (lin >= 0 && lin < HEIGHT && col >= 0 && col < WIDTH) {
+            grid[lin][col] = value;
+        }
+    }
+
+    int getCell(int lin, int col) const {
+        if (lin >= 0 && lin < HEIGHT && col >= 0 && col < WIDTH) {
+            return grid[lin][col];
+        }
+        return -1;
+    }
+};
+
 struct tree {           //ESTRUTURA COM TOPO E TRES RAMIFICACOES
 
 	char info;           //GUARDA APENAS UM CARACTERE REFERENTE A APENAS UM TERMINAL OU FUNCAO,
@@ -113,9 +173,9 @@ struct ball_data {          //POSICAO E DIRECAO DA BOLA
 
 int n, nbef;                          //CONTROLA NUMERO DE SORTEIOS DO INDIVIDUOS
 
-int environment[HEIGHT][WIDTH],       //AMBIENTE
-robot_track[HEIGHT][WIDTH],         //CAMINHO DO ROBO
-ball_track[HEIGHT][WIDTH];          //CAMINHO DA BOLA
+//AMBIENTE now handled by Environment class
+int robot_track[HEIGHT][WIDTH];         //CAMINHO DO ROBO
+int ball_track[HEIGHT][WIDTH];          //CAMINHO DA BOLA
 
 int fit, unfit, randnum;              //GUARDAM FITNESS
 
@@ -181,20 +241,7 @@ double fitness(struct robot_data robot, struct ball_data ball)
 	}
 }
 
-bool isPathClear(double startLin, double startCol, double angle, int steps) {
-    double testlin = startLin - (steps * sin((PI * angle) / 180));
-    double testcol = startCol + (steps * cos((PI * angle) / 180));
-
-    // Boundary check
-    if (testlin < 1 || testlin > HEIGHT-2 || testcol < 1 || testcol > WIDTH-2) 
-        return false;
-
-    // Obstacle check
-    if (environment[(int)testlin][(int)testcol])
-        return false;
-
-    return true;
-}
+Environment env;
 
 int obstacle(struct robot_data robot, struct ball_data ball, double angle) {
     // Normalize angle
@@ -206,7 +253,7 @@ int obstacle(struct robot_data robot, struct ball_data ball, double angle) {
     
     // Check path to ball
     while ((int)ball.lin != (int)lin && (int)ball.col != (int)col) {
-        if (!isPathClear(lin, col, angle, 1))
+        if (!env.isPathClear(lin, col, angle, 1))
             return 0;
             
         lin = lin - sin((PI * angle) / 180);
@@ -221,7 +268,7 @@ int obstacle(struct robot_data robot, struct ball_data ball, double angle) {
 //* ESTIVER PROXIMO A PAREDE RETORNA 1 *
 //**************************************
 int ifwall(struct robot_data robot) {
-    return !isPathClear(robot.lin, robot.col, robot.dir, 2);
+    return !env.isPathClear(robot.lin, robot.col, robot.dir, 2);
 }
 
 double normalizeAngle(double angle) {
@@ -338,11 +385,11 @@ void moveRobot(struct robot_data* robot, int direction) {
     testlin = robot->lin - sin((PI * angle) / 180);
     testcol = robot->col + cos((PI * angle) / 180);
 
-    if (!environment[(int)testlin][(int)testcol]) {
-        environment[(int)robot->lin][(int)robot->col] = 0;
+    if (!env.getCell((int)testlin, (int)testcol)) {
+        env.setCell((int)robot->lin, (int)robot->col, 0);
         robot->lin = testlin;
         robot->col = testcol;
-        environment[(int)robot->lin][(int)robot->col] = 1;
+        env.setCell((int)robot->lin, (int)robot->col, 1);
     }
 }
 
@@ -746,7 +793,7 @@ void moveball(struct ball_data* ball, struct robot_data robot)
 			initial_distance = sqrt((Dlin * Dlin) + (Dcol * Dcol));
 		}
 
-		else if (environment[(int)testlin][(int)testcol] && (int)testlin < 197 && (int)testlin > 2
+		else if (env.getCell((int)testlin, (int)testcol) && (int)testlin < 197 && (int)testlin > 2
 			&& (int)testcol < 197 && (int)testcol > 2)  //REFLEXAO INTERNA
 		{
 			if ((int)testlin < 66)
@@ -1373,14 +1420,14 @@ void moveball(struct ball_data* ball, struct robot_data robot)
 		else if ((int)testcol == 199)
 			testcol--;
 
-		environment[(int)ball->lin][(int)ball->col] = 0;
+		env.setCell((int)ball->lin, (int)ball->col, 0);
 
 		ball->lin = testlin;
 		ball->col = testcol;
 
 
 		ball_track[(int)ball->lin][(int)ball->col] = 1;
-		environment[(int)ball->lin][(int)ball->col] = 1;
+		env.setCell((int)ball->lin, (int)ball->col, 1);
 	}
 }
 
@@ -1508,35 +1555,7 @@ void execute(struct tree* pointer, struct robot_data* robot, struct ball_data* b
 //* RECEBE MATRIZ E A PREENCHE  *
 //* CONFORME O AMBIENTE INICIAL *
 //*******************************
-void initializeEnvironment(int matriz[HEIGHT][WIDTH]) {
-    // Clear environment and set borders
-    for (int lin = 0; lin < HEIGHT; lin++) {
-        for (int col = 0; col < WIDTH; col++) {
-            if (lin == 0 || lin == HEIGHT-1 || col == 0 || col == WIDTH-1) {
-                matriz[lin][col] = 2; // Border
-            } else {
-                matriz[lin][col] = 0; // Empty space
-            }
-        }
-    }
-    
-    // Create standard obstacle pattern
-    const int OBSTACLE_SIZE = 16;
-    const int OBSTACLE_POSITIONS[] = {25, 91, 160};
-    
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            int lin = OBSTACLE_POSITIONS[i];
-            int col = OBSTACLE_POSITIONS[j];
-            
-            for (int y = lin; y < lin + OBSTACLE_SIZE; y++) {
-                for (int x = col; x < col + OBSTACLE_SIZE; x++) {
-                    matriz[y][x] = 2;
-                }
-            }
-        }
-    }
-}
+// Removed initializeEnvironment - now using Environment class initialize() method
 
 //****************************************
 //* RECEBE MATRIZ DE IMAGEM E A PREENCHE *
@@ -1758,12 +1777,12 @@ struct tree* load(struct tree* pointer)
 //*******************************************
 //* DESENHA OBSTACULO NA MATRIZ DO AMBIENTE *
 //*******************************************
-void initializeBall(struct ball_data* ball, int environment[HEIGHT][WIDTH]) {
+void initializeBall(struct ball_data* ball) {
     do {
         ball->col = (int)(rand() % (WIDTH-2)) + 1;
         ball->lin = (int)(rand() % (HEIGHT-2)) + 1;
 
-        if (environment[(int)ball->lin][(int)ball->col]) {
+        if (env.getCell((int)ball->lin, (int)ball->col)) {
             // If position is occupied, randomly adjust either line or column
             if (rand() % 2) {
                 ball->col = (int)(rand() % (WIDTH-2)) + 1;
@@ -1771,18 +1790,18 @@ void initializeBall(struct ball_data* ball, int environment[HEIGHT][WIDTH]) {
                 ball->lin = (int)(rand() % (HEIGHT-2)) + 1;
             }
         }
-    } while (environment[(int)ball->lin][(int)ball->col]);
+    } while (env.getCell((int)ball->lin, (int)ball->col));
     
-    environment[(int)ball->lin][(int)ball->col] = 1;
+    env.setCell((int)ball->lin, (int)ball->col, 1);
 }
 
-void initializeRobot(struct robot_data* robot, int environment[HEIGHT][WIDTH]) {
+void initializeRobot(struct robot_data* robot) {
     do {
         robot->dir = ANGLE * (rand() % (360 / ANGLE));
         robot->col = (int)(rand() % (WIDTH-2)) + 1;
         robot->lin = (int)(rand() % (HEIGHT-2)) + 1;
 
-        if (environment[(int)robot->lin][(int)robot->col]) {
+        if (env.getCell((int)robot->lin, (int)robot->col)) {
             // If position is occupied, randomly adjust either line or column
             if (rand() % 2) {
                 robot->col = (int)(rand() % (WIDTH-2)) + 1;
@@ -1790,9 +1809,9 @@ void initializeRobot(struct robot_data* robot, int environment[HEIGHT][WIDTH]) {
                 robot->lin = (int)(rand() % (HEIGHT-2)) + 1;
             }
         }
-    } while (environment[(int)robot->lin][(int)robot->col]);
+    } while (env.getCell((int)robot->lin, (int)robot->col));
     
-    environment[(int)robot->lin][(int)robot->col] = 1;
+    env.setCell((int)robot->lin, (int)robot->col, 1);
 }
 
 void drawbox(int lin, int col, int size)
@@ -1801,7 +1820,7 @@ void drawbox(int lin, int col, int size)
 
 	for (i = lin; i < (lin + size); i++)
 		for (j = col; j < (col + size); j++)
-			environment[i][j] = 2;
+			env.setCell(i, j, 2);
 }
 
 //*****************************************
@@ -2012,7 +2031,7 @@ int main(void)
 
 			rob[i].fitness = 0;
 
-			initializeEnvironment(environment);
+			env.initialize();
 
 			for (j = 0; j < RUNS; j++)
 			{
@@ -2023,12 +2042,8 @@ int main(void)
 
 				fit = unfit = ball_hits = 0;
 
-				initializeRobot(&robot, environment);
-
-				environment[(int)robot.lin][(int)robot.col] = 1;
-				initializeBall(&ball, environment);
-
-				environment[(int)ball.lin][(int)ball.col] = 1;
+				initializeRobot(&robot);
+                                initializeBall(&ball);
 
 				robot_track[(int)robot.lin][(int)robot.col] = 1;
 				ball_track[(int)ball.lin][(int)ball.col] = 1;
