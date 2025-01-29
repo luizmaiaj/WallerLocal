@@ -234,14 +234,6 @@ int ifball(const Robot& robot, struct ball_data ball)
 void hitverify(const Robot& robot, struct ball_data* ball)
 {
 	double Dlin, Dcol;
-	int stime;
-	long ltime;
-
-
-	//SEMENTE DO RANDOM
-	ltime = time(NULL);
-	stime = (unsigned)ltime / 2;
-	srand(stime);
 
 	Dlin = ball->lin - robot.getLine();
 	Dcol = ball->col - robot.getColumn();
@@ -509,9 +501,7 @@ void moveball(struct ball_data* ball, const Robot& robot)
 {
 	double testlin = 0, testcol = 0, Drest = 0, xi, xf, yi, yf, Dlin, Dcol;
 	double lin, col;
-	int stime, angle;
-	long ltime;
-
+	int angle;
 
 	angle = ball->dir;
 	lin = ball->lin;
@@ -524,12 +514,6 @@ void moveball(struct ball_data* ball, const Robot& robot)
 		ball->dir -= 360;
 
 	angle = ball->dir;
-
-	//SEMENTE DO RANDOM
-	ltime = time(NULL);
-	stime = (unsigned)ltime / 2;
-	srand(stime);
-
 
 	if (ball_movements > 0)
 	{
@@ -1653,11 +1637,13 @@ void drawboxim(unsigned char matriz[HEIGHT][WIDTH][3], int lin, int col, int siz
 //************************
 int main(void)
 {
+	//SEMENTE DO RANDOM
+	long ltime = time(NULL);
+	int stime = (unsigned)ltime / 2;
+	srand(stime);
+
 	struct ind rob[POPULATION],                 //PONTEIRO INICIAL DO INDIVIDUO
 		crossing_results[CROSSING];
-
-	int stime;                           //REPASSA A HORA PARA SEMENTE DO RANDOM
-	long ltime;                          //RECEBE A HORA PARA RANDOM
 
 	int lin, col;                        //AUXILIARES DE IMPRESSAO DA MATRIZ
 
@@ -1693,14 +1679,8 @@ int main(void)
 
 	time_t run_start_time, run_end_time;
 
-
 	//HORA DO INICIO
 	run_start_time = time(NULL);
-
-	//SEMENTE DO RANDOM
-	ltime = time(NULL);
-	stime = (unsigned)ltime / 2;
-	srand(stime);
 
 	//LIMPA TELA
 	system("clear");
