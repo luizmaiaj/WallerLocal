@@ -1,3 +1,9 @@
 #!/bin/bash
-clear
-clang++ -std=c++20 -g main.cpp -o wallerlocal
+
+mkdir -p build
+cd build
+cmake ..
+make -j$(nproc)
+
+# Copy executable to root directory
+cp waller ..
