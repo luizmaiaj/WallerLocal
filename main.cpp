@@ -28,7 +28,6 @@
 #define HIT_DISTANCE 1             //DISTANCIA CONSIDERADA PARA TOQUE
 #define VIEW_ANGLE 30              //DEFINE ANGULO DA VISAO LOCAL
 
-
 /*
  ******************************************************************************************************
  VISAO LOCAL, FUNCAO IFBALL, ALIGN ALTERADO, ECONOMIZA MEMORIA, ENXERGA OBSTACULOS
@@ -1908,19 +1907,18 @@ int main(void)
 	//VERIFICA ARQUIVOS DE INDIVIDUOS QUE JA EXISTEM
 	//----------------------------------------------
 	{
-		char filename[20];
-
+		char filename[25];
 
 		number_of_track_files = 0;
 
-		sprintf(filename, "paths/caminho%.3d.gif", number_of_track_files);
+		snprintf(filename, sizeof(filename), "paths/caminho%.3d.gif", number_of_track_files);
 
-		while (track_files_pointer = fopen(filename, "r"))
+		while ((track_files_pointer = fopen(filename, "r")) != NULL)
 		{
 			fclose(track_files_pointer);
 
 			number_of_track_files++;
-			sprintf(filename, "paths/caminho%.3d.gif", number_of_track_files);
+			snprintf(filename, sizeof(filename), "paths/caminho%.3d.gif", number_of_track_files);
 		}
 	}
 
@@ -1930,17 +1928,16 @@ int main(void)
 	{
 		char filename[20];
 
-
 		i = 0;
 
-		sprintf(filename, "data/data%.3d.txt", i);
+		snprintf(filename, sizeof(filename), "data/data%.3d.txt", i);
 
-		while (file_pointer = fopen(filename, "r"))
+		while ((file_pointer = fopen(filename, "r")) != NULL)
 		{
 			fclose(file_pointer);
 
 			i++;
-			sprintf(filename, "data/data%.3d.txt", i);
+			snprintf(filename, sizeof(filename), "data/data%.3d.txt", i);
 		}
 
 		if ((file_pointer = fopen(filename, "w+")) == NULL)  //ARQUIVO COM DADOS DA SIMULACAO
@@ -2307,7 +2304,7 @@ int main(void)
 
 			printf("\n");
 
-			printf("\n\t%.2d - FITNESS = %3d, e COMPRIMENTO = %3d\n", i, rob[i].fitness, length(rob[i].root));
+			printf("\n\t%.2d - FITNESS = %3ld, e COMPRIMENTO = %3d\n", i, rob[i].fitness, length(rob[i].root));
 		}
 
 		printf("\n");
@@ -2372,14 +2369,14 @@ int main(void)
 
 		i = 0;
 
-		sprintf(filename, "robots/rb%.3dtr.txt", i);
+		snprintf(filename, sizeof(filename), "robots/rb%.3dtr.txt", i);
 
-		while (file_pointer = fopen(filename, "r"))
+		while ((file_pointer = fopen(filename, "r")) != NULL)
 		{
 			fclose(file_pointer);
 
 			i++;
-			sprintf(filename, "robots/rb%.3dtr.txt", i);
+			snprintf(filename, sizeof(filename), "robots/rb%.3dtr.txt", i);
 		}
 	}
 
@@ -2421,7 +2418,7 @@ int main(void)
 					save(rob[robot_index].root);
 
 					n = 1;
-					fprintf(file_pointer, "\n\nLENGTH = %d\n\nFITNESS = %d\n",
+					fprintf(file_pointer, "\n\nLENGTH = %d\n\nFITNESS = %ld\n",
 					length(rob[robot_index].root), rob[robot_index].fitness);
 					fclose(file_pointer);
 				}
