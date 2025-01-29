@@ -333,42 +333,27 @@ void hitverify(struct robot_data robot, struct ball_data* ball)
 //* RECEBE DADOS DO ROBO E O     *
 //* FAZ DAR UM PASSO PARA FRENTE *
 //********************************
-void walkfront(struct robot_data* robot)
-{
-	double testlin, testcol;
+void moveRobot(struct robot_data* robot, int direction) {
+    double testlin, testcol;
+    double angle = robot->dir + (direction * 180); // 0 for forward, 180 for backward
 
+    testlin = robot->lin - sin((PI * angle) / 180);
+    testcol = robot->col + cos((PI * angle) / 180);
 
-	testlin = robot->lin - sin((PI * robot->dir) / 180);
-	testcol = robot->col + cos((PI * robot->dir) / 180);
-
-	if (!environment[(int)testlin][(int)testcol])
-	{
-		environment[(int)robot->lin][(int)robot->col] = 0;
-		robot->lin = testlin;
-		robot->col = testcol;
-		environment[(int)robot->lin][(int)robot->col] = 1;
-	}
+    if (!environment[(int)testlin][(int)testcol]) {
+        environment[(int)robot->lin][(int)robot->col] = 0;
+        robot->lin = testlin;
+        robot->col = testcol;
+        environment[(int)robot->lin][(int)robot->col] = 1;
+    }
 }
 
-//******************************
-//* RECEBE DADOS DO ROBO E O   *
-//* FAZ DAR UM PASSO PARA TRAS *
-//******************************
-void walkback(struct robot_data* robot)
-{
-	double testlin, testcol;
+void walkfront(struct robot_data* robot) {
+    moveRobot(robot, 0);
+}
 
-
-	testlin = robot->lin - sin((PI * (robot->dir + 180)) / 180);
-	testcol = robot->col + cos((PI * (robot->dir + 180)) / 180);
-
-	if (!environment[(int)testlin][(int)testcol])
-	{
-		environment[(int)robot->lin][(int)robot->col] = 0;
-		robot->lin = testlin;
-		robot->col = testcol;
-		environment[(int)robot->lin][(int)robot->col] = 1;
-	}
+void walkback(struct robot_data* robot) {
+    moveRobot(robot, 1);
 }
 
 //********************************
