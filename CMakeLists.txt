@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(waller
     main.cpp
     environment.cpp
+    robot.cpp
 )
 
 target_include_directories(waller PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

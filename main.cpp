@@ -6,7 +6,6 @@
 #include <iomanip>
 #include <filesystem>
 #include <format>
-#include "environment.h"
 
 //INCLUSAO DE BIBLIOTECAS
 #include <stdio.h>
@@ -14,6 +13,9 @@
 #include <time.h>
 #include <string.h>
 #include <math.h>
+
+#include "environment.h"
+#include "robot.h"
 
 #define GENS 51                    //NUMERO DE GERACOES
 #define POPULATION 500             //TAMANHO DA POPULACAO
@@ -100,12 +102,6 @@ struct ind {            //INDIVIDUO COMPLETO COM ARVORE E FITNESS, UTILIZADO APE
 	struct tree* root;
 };
 
-struct robot_data {         //POSICAO E DIRECAO DO ROBO
-	int dir;
-	double lin;
-	double col;
-};
-
 struct ball_data {          //POSICAO E DIRECAO DA BOLA
 	int dir;
 	double lin;
@@ -117,6 +113,10 @@ int n, nbef;                          //CONTROLA NUMERO DE SORTEIOS DO INDIVIDUO
 //AMBIENTE now handled by Environment class
 int robot_track[HEIGHT][WIDTH];         //CAMINHO DO ROBO
 int ball_track[HEIGHT][WIDTH];          //CAMINHO DA BOLA
+
+Environment env;
+
+Robot robot(env);  // Global robot instance
 
 int fit, unfit, randnum;              //GUARDAM FITNESS
 
@@ -154,16 +154,14 @@ void freemem(struct tree* pointer)
 //****************
 //* MEDE FITNESS *
 //****************
-double fitness(struct robot_data robot, struct ball_data ball)
+double fitness(const Robot& robot, struct ball_data ball)
 {
-	double distlin, distcol, distnow;
 	double calc;
 
+	double distlin = ball.lin - robot.getLine();
+	double distcol = ball.col - robot.getColumn();
 
-	distlin = ball.lin - robot.lin;
-	distcol = ball.col - robot.col;
-
-	distnow = sqrt((distcol * distcol) + (distlin * distlin));
+	double distnow = sqrt((distcol * distcol) + (distlin * distlin));
 
 	if (distance[0] == 0)
 	{
@@ -182,15 +180,13 @@ double fitness(struct robot_data robot, struct ball_data ball)
 	}
 }
 
-Environment env;
-
-int obstacle(struct robot_data robot, struct ball_data ball, double angle) {
+int obstacle(double robotLin, double robotCol, struct ball_data ball, double angle) {
     // Normalize angle
     while (angle >= 360) angle -= 360;
     while (angle < 0) angle += 360;
     
-    double lin = robot.lin;
-    double col = robot.col;
+    double lin = robot.getLine();
+    double col = robot.getColumn();
     
     // Check path to ball
     while ((int)ball.lin != (int)lin && (int)ball.col != (int)col) {
@@ -204,59 +200,17 @@ int obstacle(struct robot_data robot, struct ball_data ball, double angle) {
     return 1;
 }
 
-//**************************************
-//* RECEBE DADOS DO ROBO E SE ELE      *
-//* ESTIVER PROXIMO A PAREDE RETORNA 1 *
-//**************************************
-int ifwall(struct robot_data robot) {
-    return !env.isPathClear(robot.lin, robot.col, robot.dir, 2);
-}
-
-double normalizeAngle(double angle) {
-    while (angle >= 360) angle -= 360;
-    while (angle < 0) angle += 360;
-    return angle;
-}
-
-double calculateAngleBetweenPoints(double y1, double x1, double y2, double x2) {
-    double dy = y2 - y1;
-    double dx = x2 - x1;
-    double angle = (180 / PI) * atan(dy / dx);
-    
-    if (dx >= 0)
-        angle = 360 - angle;
-    else
-        angle = 180 - angle;
-        
-    return normalizeAngle(angle);
-}
-
-bool isAngleInRange(double angle1, double angle2, double range) {
-    return abs((int)(angle1 - angle2)) <= range;
-}
-
-void align(struct robot_data* robot, struct ball_data ball) {
-    double angle = calculateAngleBetweenPoints(robot->lin, robot->col, ball.lin, ball.col);
-    
-    if (isAngleInRange(angle, robot->dir, VIEW_ANGLE)) {
-        robot->dir = normalizeAngle(robot->dir);
-        if (obstacle(*robot, ball, angle)) {
-            robot->dir = angle;
-        }
-    }
-}
-
 //******************************************
 //* EXECUTA RAMO ESQUERDO SE ENXERGAR BOLA *
 //* DO CONTRARIO EXECUTA RAMO DIREITO      *
 //******************************************
-int ifball(struct robot_data robot, struct ball_data ball)
+int ifball(const Robot& robot, struct ball_data ball)
 {
 	double Dlin, Dcol, angle;
 
 
-	Dlin = ball.lin - robot.lin;
-	Dcol = ball.col - robot.col;
+	Dlin = ball.lin - robot.getLine();
+	Dcol = ball.col - robot.getColumn();
 
 	angle = (180 / PI) * atan(Dlin / Dcol);
 
@@ -266,8 +220,8 @@ int ifball(struct robot_data robot, struct ball_data ball)
 	else
 		angle = 180 - angle;
 
-	if ((int)(angle - robot.dir) > VIEW_ANGLE || (int)(angle - robot.dir) < -VIEW_ANGLE)
-		if (obstacle(robot, ball, angle)) return (0);
+	if ((int)(angle - robot.getDirection()) > VIEW_ANGLE || (int)(angle - robot.getDirection()) < -VIEW_ANGLE)
+		if (obstacle(robot.getLine(), robot.getColumn(), ball, angle)) return (0);
 
 	return (1);
 
@@ -277,7 +231,7 @@ int ifball(struct robot_data robot, struct ball_data ball)
 //* RECEBE DADOS DO ROBO E        *
 //* VERIFICA SE ELE TOCOU NA BOLA *
 //*********************************
-void hitverify(struct robot_data robot, struct ball_data* ball)
+void hitverify(const Robot& robot, struct ball_data* ball)
 {
 	double Dlin, Dcol;
 	int stime;
@@ -289,8 +243,8 @@ void hitverify(struct robot_data robot, struct ball_data* ball)
 	stime = (unsigned)ltime / 2;
 	srand(stime);
 
-	Dlin = ball->lin - robot.lin;
-	Dcol = ball->col - robot.col;
+	Dlin = ball->lin - robot.getLine();
+	Dcol = ball->col - robot.getColumn();
 
 	if (sqrt((Dlin * Dlin) + (Dcol * Dcol)) <= HIT_DISTANCE)
 	{
@@ -310,7 +264,7 @@ void hitverify(struct robot_data robot, struct ball_data* ball)
 		}
 
 		ball_movements = 40;
-		ball->dir = robot.dir;
+		ball->dir = robot.getDirection();
 		ball_hits++;
 	}
 }
@@ -319,47 +273,7 @@ void hitverify(struct robot_data robot, struct ball_data* ball)
 //* RECEBE DADOS DO ROBO E O     *
 //* FAZ DAR UM PASSO PARA FRENTE *
 //********************************
-void moveRobot(struct robot_data* robot, int direction) {
-    double testlin, testcol;
-    double angle = robot->dir + (direction * 180); // 0 for forward, 180 for backward
-
-    testlin = robot->lin - sin((PI * angle) / 180);
-    testcol = robot->col + cos((PI * angle) / 180);
-
-    if (!env.getCell((int)testlin, (int)testcol)) {
-        env.setCell((int)robot->lin, (int)robot->col, 0);
-        robot->lin = testlin;
-        robot->col = testcol;
-        env.setCell((int)robot->lin, (int)robot->col, 1);
-    }
-}
-
-void walkfront(struct robot_data* robot) {
-    moveRobot(robot, 0);
-}
-
-void walkback(struct robot_data* robot) {
-    moveRobot(robot, 1);
-}
-
-//********************************
-//* RECEBE DIRECAO DO ROBO E O   *
-//* FAZ VIRAR `ANGLE` A ESQUERDA *
-//********************************
-void turnRobot(int* robotdir, int direction) {
-    *robotdir += ANGLE * direction; // direction: +1 for left, -1 for right
-
-    if (*robotdir >= 360)
-        *robotdir -= 360;
-}
-
-void left(int* robotdir) {
-    turnRobot(robotdir, 1);
-}
-
-void right(int* robotdir) {
-    turnRobot(robotdir, -1);
-}
+// Robot movement functions now handled by Robot class
 
 //********************************************
 //* ALOCA MEMORIA PARA UMA ESTRUTURA         *
@@ -591,7 +505,7 @@ void print(struct tree* pointer)
 //* RECEBE DADOS DA BOLA E DO ROBO E        *
 //* MOVIMENTA BOLA DE ACORDO COM O AMBIENTE *
 //*******************************************
-void moveball(struct ball_data* ball, struct robot_data robot)
+void moveball(struct ball_data* ball, const Robot& robot)
 {
 	double testlin = 0, testcol = 0, Drest = 0, xi, xf, yi, yf, Dlin, Dcol;
 	double lin, col;
@@ -729,8 +643,8 @@ void moveball(struct ball_data* ball, struct robot_data robot)
 				testcol += Drest * cos((PI * ball->dir) / 180);
 			}
 
-			Dlin = robot.lin - ball->lin;
-			Dcol = robot.col - ball->col;
+			Dlin = robot.getLine() - ball->lin;
+Dcol = robot.getColumn() - ball->col;
 			initial_distance = sqrt((Dlin * Dlin) + (Dcol * Dcol));
 		}
 
@@ -1377,50 +1291,50 @@ void moveball(struct ball_data* ball, struct robot_data robot)
 //* UTILIZANDO OUTRAS FUNCOES SIMULA *
 //* OS DOIS NO AMBIENTE              *
 //************************************
-void execute(struct tree* pointer, struct robot_data* robot, struct ball_data* ball)
+void execute(struct tree* pointer, struct ball_data* ball)
 {
-	moveball(ball, *robot);
+	moveball(ball, robot);
 
 	switch (pointer->info)
 	{
 	case 51:                    //PROGN3
-		execute(pointer->left, robot, ball);    //CHAMA RAMO ESQUERDO
+		execute(pointer->left, ball);    //CHAMA RAMO ESQUERDO
 
-		execute(pointer->center, robot, ball);  //CHAMA RAMO CENTRAL
+		execute(pointer->center, ball);  //CHAMA RAMO CENTRAL
 
-		execute(pointer->right, robot, ball);   //CHAMA RAMO DIREITO
+		execute(pointer->right, ball);   //CHAMA RAMO DIREITO
 
 		break;
 
 	case 50:                    //PROGN2
-		execute(pointer->left, robot, ball);
+		execute(pointer->left, ball);
 
-		execute(pointer->right, robot, ball);
+		execute(pointer->right, ball);
 
 		break;
 
 	case 73:                    //IFWALL
-		if (ifwall(*robot))
-			execute(pointer->left, robot, ball);
+		if (robot.isNearWall())
+			execute(pointer->left, ball);
 
 		else
-			execute(pointer->right, robot, ball);
+			execute(pointer->right, ball);
 
 		break;
 
 	case 67:                    //IFBALL
-		if (ifball(*robot, *ball))
-			execute(pointer->left, robot, ball);
+		if (robot.canSeeBall(ball->lin, ball->col))
+			execute(pointer->left, ball);
 
 		else
-			execute(pointer->right, robot, ball);
+			execute(pointer->right, ball);
 
 		break;
 
 	case 65:                    //ALIGN
-		align(robot, *ball);
+		robot.align(ball->lin, ball->col);
 
-		robot_track[(int)robot->lin][(int)robot->col] = n;
+		robot_track[(int)robot.getLine()][(int)robot.getColumn()] = n;
 
 		n++;
 
@@ -1428,64 +1342,35 @@ void execute(struct tree* pointer, struct robot_data* robot, struct ball_data* b
 
 	case 70:                   //WALKFRONT
 	{
-		//int aux;
-
-
-		walkfront(robot);
-
-		//aux = fitness(*robot, *ball);
-
-		//if(aux > 0)
-		//  fit += aux;
-		//else
-		//  unfit -= aux;
-
-		robot_track[(int)robot->lin][(int)robot->col] = n;
-
+		robot.walkFront();
+		robot_track[(int)robot.getLine()][(int)robot.getColumn()] = n;
 		n++;
 	}
 
-	hitverify(*robot, ball);
+	hitverify(robot, ball);
 
 	break;
 
 	case 66:                   //WALKBACK
 	{
-		//int aux;
-
-
-		walkback(robot);
-
-		//aux = fitness(*robot, *ball);
-
-		//if(aux > 0)
-		//  fit += aux;
-		//else
-		//  unfit -= aux;
-
-		robot_track[(int)robot->lin][(int)robot->col] = n;
-
+		robot.walkBack();
+		robot_track[(int)robot.getLine()][(int)robot.getColumn()] = n;
 		n++;
 	}
 
-	hitverify(*robot, ball);
+	hitverify(robot, ball);
 
 	break;
 
 	case 76:                   //LEFT
-		left(&robot->dir);
-
-		robot_track[(int)robot->lin][(int)robot->col] = n;
-
+		robot.turnLeft();
+		robot_track[(int)robot.getLine()][(int)robot.getColumn()] = n;
 		n++;
-
 		break;
 
 	case 82:                   //RIGHT
-		right(&robot->dir);
-
-		robot_track[(int)robot->lin][(int)robot->col] = n;
-
+		robot.turnRight();
+		robot_track[(int)robot.getLine()][(int)robot.getColumn()] = n;
 		n++;
 
 		break;
@@ -1736,24 +1621,7 @@ void initializeBall(struct ball_data* ball) {
     env.setCell((int)ball->lin, (int)ball->col, 1);
 }
 
-void initializeRobot(struct robot_data* robot) {
-    do {
-        robot->dir = ANGLE * (rand() % (360 / ANGLE));
-        robot->col = (int)(rand() % (WIDTH-2)) + 1;
-        robot->lin = (int)(rand() % (HEIGHT-2)) + 1;
-
-        if (env.getCell((int)robot->lin, (int)robot->col)) {
-            // If position is occupied, randomly adjust either line or column
-            if (rand() % 2) {
-                robot->col = (int)(rand() % (WIDTH-2)) + 1;
-            } else {
-                robot->lin = (int)(rand() % (HEIGHT-2)) + 1;
-            }
-        }
-    } while (env.getCell((int)robot->lin, (int)robot->col));
-    
-    env.setCell((int)robot->lin, (int)robot->col, 1);
-}
+// Robot initialization now handled by Robot class
 
 void drawbox(int lin, int col, int size)
 {
@@ -1813,7 +1681,7 @@ int main(void)
 
 	unsigned char best_track[HEIGHT][WIDTH][3];
 
-	struct robot_data robot;                 //GUARDA TODOS OS DADOS NECESSARIOS DO ROBO
+	// Robot is now handled by the global Robot instance
 
 	struct ball_data ball;                 //GUARDA TODOS OS DADOS NECESSARIOS DA BOLA
 
@@ -1983,10 +1851,10 @@ int main(void)
 
 				fit = unfit = ball_hits = 0;
 
-				initializeRobot(&robot);
+				robot.initialize();
                                 initializeBall(&ball);
 
-				robot_track[(int)robot.lin][(int)robot.col] = 1;
+				robot_track[(int)robot.getLine()][(int)robot.getColumn()] = 1;
 				ball_track[(int)ball.lin][(int)ball.col] = 1;
 
 
@@ -1997,15 +1865,15 @@ int main(void)
 
 					nbef = 0;
 
-					Dlin = ball.lin - robot.lin;
-					Dcol = ball.col - robot.col;
+					Dlin = ball.lin - robot.getLine();
+					Dcol = ball.col - robot.getColumn();
 
 					initial_distance = sqrt((Dlin * Dlin) + (Dcol * Dcol));
 				}
 
 
 				for (n = 0; n < EXECUTE;)
-					execute(rob[i].root, &robot, &ball);
+					execute(rob[i].root, &ball);
 
 				//****************************************************
 				//CALCULO DO FITNESS

@@ -3,7 +3,5 @@
 mkdir -p build
 cd build
 cmake ..
-make -j$(nproc)
-
-# Copy executable to root directory
+make
 cp waller ..
