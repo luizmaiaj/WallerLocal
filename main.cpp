@@ -224,31 +224,38 @@ int ifwall(struct robot_data robot) {
     return !isPathClear(robot.lin, robot.col, robot.dir, 2);
 }
 
-void align(struct robot_data* robot, struct ball_data ball)
-{
-	double Dlin, Dcol, angle;
+double normalizeAngle(double angle) {
+    while (angle >= 360) angle -= 360;
+    while (angle < 0) angle += 360;
+    return angle;
+}
 
+double calculateAngleBetweenPoints(double y1, double x1, double y2, double x2) {
+    double dy = y2 - y1;
+    double dx = x2 - x1;
+    double angle = (180 / PI) * atan(dy / dx);
+    
+    if (dx >= 0)
+        angle = 360 - angle;
+    else
+        angle = 180 - angle;
+        
+    return normalizeAngle(angle);
+}
 
-	Dlin = ball.lin - robot->lin;
-	Dcol = ball.col - robot->col;
+bool isAngleInRange(double angle1, double angle2, double range) {
+    return abs((int)(angle1 - angle2)) <= range;
+}
 
-	angle = (180 / PI) * atan(Dlin / Dcol);
-
-	if (Dcol >= 0)
-		angle = 360 - angle;
-
-	else
-		angle = 180 - angle;
-
-	if ((int)(angle - robot->dir) <= VIEW_ANGLE && (int)(angle - robot->dir) >= -VIEW_ANGLE)
-	{
-		if (robot->dir >= 360)
-			robot->dir -= 360;
-		else if (robot->dir < 0)
-			robot->dir += 360;
-
-		if (obstacle(*robot, ball, angle)) robot->dir = angle;
-	}
+void align(struct robot_data* robot, struct ball_data ball) {
+    double angle = calculateAngleBetweenPoints(robot->lin, robot->col, ball.lin, ball.col);
+    
+    if (isAngleInRange(angle, robot->dir, VIEW_ANGLE)) {
+        robot->dir = normalizeAngle(robot->dir);
+        if (obstacle(*robot, ball, angle)) {
+            robot->dir = angle;
+        }
+    }
 }
 
 //******************************************
