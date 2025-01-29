@@ -1,7 +1,9 @@
 // main.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
-#include <iostream>
+#include <sstream>
+#include <string>
+#include <iomanip>
 
 //INCLUSAO DE BIBLIOTECAS
 #include <stdio.h>
@@ -1852,7 +1854,7 @@ int main(void)
 	{
 		char filename[20];
 
-		sprintf(filename, "rb%.3dtr.txt", i);
+		sprintf(filename, "robots/rb%.3dtr.txt", i);
 
 		if ((file_pointer = fopen(filename, "r")) == NULL)
 		{
@@ -1907,14 +1909,14 @@ int main(void)
 
 		number_of_track_files = 0;
 
-		sprintf(filename, "caminho%.3d.gif", number_of_track_files);
+		sprintf(filename, "paths/caminho%.3d.gif", number_of_track_files);
 
 		while (track_files_pointer = fopen(filename, "r"))
 		{
 			fclose(track_files_pointer);
 
 			number_of_track_files++;
-			sprintf(filename, "caminho%.3d.gif", number_of_track_files);
+			sprintf(filename, "paths/caminho%.3d.gif", number_of_track_files);
 		}
 	}
 
@@ -1927,14 +1929,14 @@ int main(void)
 
 		i = 0;
 
-		sprintf(filename, "data%.3d.txt", i);
+		sprintf(filename, "data/data%.3d.txt", i);
 
 		while (file_pointer = fopen(filename, "r"))
 		{
 			fclose(file_pointer);
 
 			i++;
-			sprintf(filename, "data%.3d.txt", i);
+			sprintf(filename, "data/data%.3d.txt", i);
 		}
 
 		if ((file_pointer = fopen(filename, "w+")) == NULL)  //ARQUIVO COM DADOS DA SIMULACAO
@@ -2312,21 +2314,19 @@ int main(void)
 		//******************
 		//* SALVA CAMINHOS *
 		//****************** 
-		printf("\n\t\tSalvando, convertendo e apagando caminhos...\n"); fflush(stdout);
+		printf("\n\t\tSalvando, convertendo e apagando caminhos...\n");
+		fflush(stdout);
 		{
-			char filename[20];
-			char command[50];
+			std::ostringstream filename_ss, command_ss;
+			filename_ss << "paths/caminho" << std::setfill('0') << std::setw(3) << number_of_track_files << ".ppm";
+			std::string filename = filename_ss.str();
 
-			sprintf(filename, "caminho%.3d.ppm", number_of_track_files);
-
-			//SALVA UMA MATRIZ PARA UM ARQUIVO TIPO PPM
-
-			if ((track_files_pointer = fopen(filename, "w+")) == NULL)
-			{
+			if ((track_files_pointer = fopen(filename.c_str(), "w+")) == NULL) {
 				printf("\n\n\tArquivo nao pode ser criado.\n\n");
 				exit(-1);
 			}
 
+			//SALVA UMA MATRIZ PARA UM ARQUIVO TIPO PPM
 			fprintf(track_files_pointer, "P3 \n 200 200 \n 255 \n");  //GRAVA COMECO
 
 			for (lin = 0; lin < HEIGHT; lin++)     //GRAVA NO ARQUIVO
@@ -2340,15 +2340,17 @@ int main(void)
 			fflush(track_files_pointer);
 			fclose(track_files_pointer);  //FECHA ARQUIVO
 
-			sprintf(command, "magick %s caminho%.3d.gif; rm %s -f", filename, number_of_track_files, filename);
+			command_ss << "magick " << filename << " paths/caminho" 
+						<< std::setfill('0') << std::setw(3) 
+						<< number_of_track_files << ".gif && rm " << filename;
+			std::string command = command_ss.str();
 
-			system(command);
+			system(command.c_str());
 
 			number_of_track_files++;
 		}
 
 		printf("\n******************************************************************************\n");
-
 	}
 
 	run_average /= (GENS - 1);
@@ -2364,17 +2366,16 @@ int main(void)
 	{
 		char filename[20];
 
-
 		i = 0;
 
-		sprintf(filename, "rb%.3dtr.txt", i);
+		sprintf(filename, "robots/rb%.3dtr.txt", i);
 
 		while (file_pointer = fopen(filename, "r"))
 		{
 			fclose(file_pointer);
 
 			i++;
-			sprintf(filename, "rb%.3dtr.txt", i);
+			sprintf(filename, "robots/rb%.3dtr.txt", i);
 		}
 	}
 
@@ -2383,21 +2384,20 @@ int main(void)
 	//********************
 	printf("\n\t\tSalvando individuos...\n");
 	{
-		int aux;
-
-		char filename[20];
-
-		for (aux = 0; aux < 100; aux++, i++)
+		for (int robot_index = 0; robot_index < 100; robot_index++) 
 		{
+			std::ostringstream path_stream;
+			path_stream << "robots/rb" << std::setfill('0') << std::setw(3) 
+						<< robot_index << "tr.txt";
+			std::string robot_path = path_stream.str();
 
-			sprintf(filename, "rb%.3dtr.txt", i);
-
-			if ((file_pointer = fopen(filename, "w+")) != NULL)
+			if ((file_pointer = fopen(robot_path.c_str(), "w+")) != NULL)
 			{
-				save(rob[aux].root);
+				save(rob[robot_index].root);
 
 				n = 1;
-				fprintf(file_pointer, "\n\nCOMPRIMENTO = %d\n\nFITNESS = %d\n", length(rob[i].root), rob[i].fitness);
+				fprintf(file_pointer, "\n\nLENGTH = %d\n\nFITNESS = %d\n",
+                   length(rob[robot_index].root), rob[robot_index].fitness);
 				fclose(file_pointer);
 			}
 		}
