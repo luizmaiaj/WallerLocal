@@ -4,6 +4,8 @@
 #include <sstream>
 #include <string>
 #include <iomanip>
+#include <filesystem>
+#include <format>
 
 //INCLUSAO DE BIBLIOTECAS
 #include <stdio.h>
@@ -1608,8 +1610,8 @@ struct tree* count(struct tree* pointer)
 		else if (n == 0)
 		{
 			crossing_auxiliar = 0;
-
 			crossing_pointer = pointer->left;
+			return crossing_pointer;
 		}
 	}
 
@@ -1623,8 +1625,8 @@ struct tree* count(struct tree* pointer)
 		else if (n == 0)
 		{
 			crossing_auxiliar = 1;
-
 			crossing_pointer = pointer->center;
+			return crossing_pointer;
 		}
 	}
 
@@ -1638,10 +1640,12 @@ struct tree* count(struct tree* pointer)
 		else if (n == 0)
 		{
 			crossing_auxiliar = 2;
-
 			crossing_pointer = pointer->right;
+			return crossing_pointer;
 		}
 	}
+
+	return crossing_pointer;
 }
 
 //********************************
@@ -1854,7 +1858,7 @@ int main(void)
 	{
 		char filename[20];
 
-		sprintf(filename, "robots/rb%.3dtr.txt", i);
+		snprintf(filename, sizeof(filename), "robots/rb%.3dtr.txt", i);
 
 		if ((file_pointer = fopen(filename, "r")) == NULL)
 		{
@@ -2384,24 +2388,45 @@ int main(void)
 	//********************
 	printf("\n\t\tSalvando individuos...\n");
 	{
-		for (int robot_index = 0; robot_index < 100; robot_index++) 
+		namespace fs = std::filesystem;
+
+		/* Find first available index */
+		int start_index = 0;
+		fs::create_directories("robots"); // Ensure directory exists
+		
+		for(; start_index < 1000; start_index++) {
+			std::string filename = "robots/rb" + 
+				std::format("{:03d}tr.txt", start_index);
+			if(!fs::exists(filename)) {
+				break;
+			}
+		}
+		
+		if(start_index >= 900) {
+			printf("Warning: Maximum file index reached (999), rotating back to (0)\n");
+			start_index = 0;
+		}
+
+        if(start_index < 0) start_index = 0;  // In case no files exist yet
+	
+		for (int robot_index = 0; robot_index < 100; robot_index++, start_index++) 
 		{
 			std::ostringstream path_stream;
 			path_stream << "robots/rb" << std::setfill('0') << std::setw(3) 
-						<< robot_index << "tr.txt";
+				<< start_index << "tr.txt";
 			std::string robot_path = path_stream.str();
 
-			if ((file_pointer = fopen(robot_path.c_str(), "w+")) != NULL)
+		if ((file_pointer = fopen(robot_path.c_str(), "w+")) != NULL)
 			{
-				save(rob[robot_index].root);
+					save(rob[robot_index].root);
 
-				n = 1;
-				fprintf(file_pointer, "\n\nLENGTH = %d\n\nFITNESS = %d\n",
-                   length(rob[robot_index].root), rob[robot_index].fitness);
-				fclose(file_pointer);
-			}
-		}
-	}
+					n = 1;
+					fprintf(file_pointer, "\n\nLENGTH = %d\n\nFITNESS = %d\n",
+					length(rob[robot_index].root), rob[robot_index].fitness);
+					fclose(file_pointer);
+				}
+        }
+    }
 
 	//******************
 	//* LIBERA MEMORIA *
