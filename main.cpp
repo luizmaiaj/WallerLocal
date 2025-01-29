@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <format>
 #include <cmath>
+#include <algorithm>
 
 //INCLUSAO DE BIBLIOTECAS
 #include <stdio.h>
@@ -249,12 +250,6 @@ void hitverify(const Robot& robot, struct ball_data* ball)
 		ball_hits++;
 	}
 }
-
-//********************************
-//* RECEBE DADOS DO ROBO E O     *
-//* FAZ DAR UM PASSO PARA FRENTE *
-//********************************
-// Robot movement functions now handled by Robot class
 
 //********************************************
 //* ALOCA MEMORIA PARA UMA ESTRUTURA         *
@@ -1905,23 +1900,9 @@ int main(void)
 		//*********************************
 		printf("\n\n\t\tOrganizando\n");
 
-		a[0] = 7;
-		a[1] = 5;
-		a[2] = 3;
-		a[3] = 2;
-		a[4] = 1;
-
-		for (k = 0; k < 5; k++)
-		{
-			gap = a[k];
-			for (i = gap; i < POPULATION; ++i)
-			{
-				x = rob[i];
-				for (j = i - gap; x.fitness > rob[j].fitness && j >= 0; j = j - gap)
-					rob[j + gap] = rob[j];
-				rob[j + gap] = x;
-			}
-		}
+		std::sort(rob, rob + POPULATION, [](const ind& a, const ind& b) {
+			return a.fitness > b.fitness; // Sort descending based on fitness
+		});
 
 		//**************            
 		//* CRUZAMENTO *
