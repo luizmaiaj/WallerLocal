@@ -1530,20 +1530,34 @@ void execute(struct tree* pointer, struct robot_data* robot, struct ball_data* b
 //* RECEBE MATRIZ E A PREENCHE  *
 //* CONFORME O AMBIENTE INICIAL *
 //*******************************
-void setenvironment(int matriz[HEIGHT][WIDTH])
-{
-	int lin, col;
-
-
-	for (lin = 0; lin < HEIGHT; lin++)
-		for (col = 0; col < WIDTH; col++)
-		{
-			if (lin == 0 || lin == 199 || col == 0 || col == 199)
-				matriz[lin][col] = 2;
-
-			else
-				matriz[lin][col] = 0;
-		}
+void initializeEnvironment(int matriz[HEIGHT][WIDTH]) {
+    // Clear environment and set borders
+    for (int lin = 0; lin < HEIGHT; lin++) {
+        for (int col = 0; col < WIDTH; col++) {
+            if (lin == 0 || lin == HEIGHT-1 || col == 0 || col == WIDTH-1) {
+                matriz[lin][col] = 2; // Border
+            } else {
+                matriz[lin][col] = 0; // Empty space
+            }
+        }
+    }
+    
+    // Create standard obstacle pattern
+    const int OBSTACLE_SIZE = 16;
+    const int OBSTACLE_POSITIONS[] = {25, 91, 160};
+    
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            int lin = OBSTACLE_POSITIONS[i];
+            int col = OBSTACLE_POSITIONS[j];
+            
+            for (int y = lin; y < lin + OBSTACLE_SIZE; y++) {
+                for (int x = col; x < col + OBSTACLE_SIZE; x++) {
+                    matriz[y][x] = 2;
+                }
+            }
+        }
+    }
 }
 
 //****************************************
@@ -1983,17 +1997,7 @@ int main(void)
 
 			rob[i].fitness = 0;
 
-			setenvironment(environment);
-
-			drawbox(25, 25, 16);
-			drawbox(25, 91, 16);
-			drawbox(25, 160, 16);
-			drawbox(91, 25, 16);
-			drawbox(91, 91, 16);
-			drawbox(91, 160, 16);
-			drawbox(160, 25, 16);
-			drawbox(160, 91, 16);
-			drawbox(160, 160, 16);
+			initializeEnvironment(environment);
 
 			for (j = 0; j < RUNS; j++)
 			{
