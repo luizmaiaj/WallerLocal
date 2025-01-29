@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <filesystem>
 #include <format>
+#include <cmath>
 
 //INCLUSAO DE BIBLIOTECAS
 #include <stdio.h>
@@ -21,7 +22,6 @@
 #define POPULATION 500             //TAMANHO DA POPULACAO
 #define CROSSING 350               //70% DA POPULACAO
 #define REPRODUCTION 150           //30% DA POPULACAO
-#define PI 3.14159265358979323846  //PI
 #define HEIGHT 200                 //ALTURA DA MATRIZ
 #define WIDTH 200                  //LARGURA DA MATRIZ
 #define RUNS 1                     //NUMERO DE TESTES DE CADA INDIVIDUOS
@@ -52,34 +52,23 @@
 
   FUNCOES:
 	PROGN3  (3), EXECUTA TRES RAMOS EM SEQUENCIA;
-
 	PROGN2  (2), EXECUTA DOIS RAMOS EM SEQUENCIA;
-
 	IFWALL  (I), EXECUTA O RAMO ESQUERDO SE HOUVER PAREDE E VICE-VERSA;
-
 	IFBALL  (C), EXECUTA O RAMO ESQUERDO SE ENXERGAR BOLA E VICE-VERSA.
 
   TERMINAIS:
 	WALKFRONT (F), FAZ ROBO ANDAR PRA FRENTE;
-
 	WALKBACK  (B), FAZ ROBO ANDAR PRA TRAS;
-
 	RIGHT     (R), FAZ ROBO VIRAR A DIREITA (DEPENDE DE `ANGLE`);
-
 	LEFT      (L), FAZ ROBO VIRAR A ESQUERDA (DEPENDE DE `ANGLE`);
-
 	ALIGN     (A), DIRECIONA ROBO PARA A BOLA (NAO DEPENDE DE `ANGLE`, MAXIMO DE 30 GRAUS).
 
   ----------------------------------------------------------
   PARAMETROS IMPORTANTES:
 	NUMERO DE GERACOES(G): DEFINIDO PELO PARAMETRO `GENS`.
-
 	TAMANHO DA POPULACAO(M): DEFINIDO PELO PARAMETRO `POPULATION`.
-
 	PROBABILIDADE DE REPRODUCAO = DEFINIDA PELO PARAMETRO `REPRODUCTION`.
-
 	PROBABILIDADE DE CRUZAMENTO = DEFINIDA PELO PARAMETRO `CROSSING`.
-
 	PROBABILIDADE DE MUTACAO    =  0%
   ----------------------------------------------------------
 
@@ -193,8 +182,8 @@ int obstacle(double robotLin, double robotCol, struct ball_data ball, double ang
         if (!env.isPathClear(lin, col, angle, 1))
             return 0;
             
-        lin = lin - sin((PI * angle) / 180);
-        col = col + cos((PI * angle) / 180);
+        lin = lin - sin((M_PI * angle) / 180);
+        col = col + cos((M_PI * angle) / 180);
     }
     
     return 1;
@@ -212,7 +201,7 @@ int ifball(const Robot& robot, struct ball_data ball)
 	Dlin = ball.lin - robot.getLine();
 	Dcol = ball.col - robot.getColumn();
 
-	angle = (180 / PI) * atan(Dlin / Dcol);
+	angle = (180 / M_PI) * atan(Dlin / Dcol);
 
 	if (Dcol >= 0)
 		angle = 360 - angle;
@@ -519,8 +508,8 @@ void moveball(struct ball_data* ball, const Robot& robot)
 	{
 		ball_movements--;
 
-		testlin = ball->lin - (2 * sin((PI * ball->dir) / 180));
-		testcol = ball->col + (2 * cos((PI * ball->dir) / 180));
+		testlin = ball->lin - (2 * sin((M_PI * ball->dir) / 180));
+		testcol = ball->col + (2 * cos((M_PI * ball->dir) / 180));
 
 
 		if (testlin < 0 || testlin > 199 || testcol < 0 || testcol > 199)  //REFLEXAO EXTERNA
@@ -539,11 +528,11 @@ void moveball(struct ball_data* ball, const Robot& robot)
 				}
 				else
 				{
-					xi = ball->col + (ball->lin / tan((ball->dir * PI) / 180));
-					xf = ball->col - ((199 - ball->lin) / tan((ball->dir * PI) / 180));
+					xi = ball->col + (ball->lin / tan((ball->dir * M_PI) / 180));
+					xf = ball->col - ((199 - ball->lin) / tan((ball->dir * M_PI) / 180));
 
-					yi = ball->lin + (tan((ball->dir * PI) / 180) * ball->col);
-					yf = ball->lin - (tan((ball->dir * PI) / 180) * (199 - ball->col));
+					yi = ball->lin + (tan((ball->dir * M_PI) / 180) * ball->col);
+					yf = ball->lin - (tan((ball->dir * M_PI) / 180) * (199 - ball->col));
 				}
 
 				if (ball->dir > 0 && ball->dir < 180 && xi <= 199 && xi >= 0)
@@ -623,8 +612,8 @@ void moveball(struct ball_data* ball, const Robot& robot)
 
 				angle = ball->dir;
 
-				testlin -= Drest * sin((PI * ball->dir) / 180);
-				testcol += Drest * cos((PI * ball->dir) / 180);
+				testlin -= Drest * sin((M_PI * ball->dir) / 180);
+				testcol += Drest * cos((M_PI * ball->dir) / 180);
 			}
 
 			Dlin = robot.getLine() - ball->lin;
@@ -651,11 +640,11 @@ Dcol = robot.getColumn() - ball->col;
 					}
 					else
 					{
-						xi = ball->col - ((25 - ball->lin) / tan((ball->dir * PI) / 180));
-						xf = ball->col - ((40 - ball->lin) / tan((ball->dir * PI) / 180));
+						xi = ball->col - ((25 - ball->lin) / tan((ball->dir * M_PI) / 180));
+						xf = ball->col - ((40 - ball->lin) / tan((ball->dir * M_PI) / 180));
 
-						yi = ball->lin - (tan((ball->dir * PI) / 180) * (25 - ball->col));
-						yf = ball->lin - (tan((ball->dir * PI) / 180) * (40 - ball->col));
+						yi = ball->lin - (tan((ball->dir * M_PI) / 180) * (25 - ball->col));
+						yf = ball->lin - (tan((ball->dir * M_PI) / 180) * (40 - ball->col));
 					}
 
 					if (xi <= 40 && xi >= 25 && ball->dir < 360 && ball->dir > 180)
@@ -717,11 +706,11 @@ Dcol = robot.getColumn() - ball->col;
 					}
 					else
 					{
-						xi = ball->col - ((25 - ball->lin) / tan((ball->dir * PI) / 180));
-						xf = ball->col - ((40 - ball->lin) / tan((ball->dir * PI) / 180));
+						xi = ball->col - ((25 - ball->lin) / tan((ball->dir * M_PI) / 180));
+						xf = ball->col - ((40 - ball->lin) / tan((ball->dir * M_PI) / 180));
 
-						yi = ball->lin - (tan((ball->dir * PI) / 180) * (91 - ball->col));
-						yf = ball->lin - (tan((ball->dir * PI) / 180) * (106 - ball->col));
+						yi = ball->lin - (tan((ball->dir * M_PI) / 180) * (91 - ball->col));
+						yf = ball->lin - (tan((ball->dir * M_PI) / 180) * (106 - ball->col));
 					}
 
 					if (xi <= 106 && xi >= 91 && ball->dir < 360 && ball->dir > 180)
@@ -783,11 +772,11 @@ Dcol = robot.getColumn() - ball->col;
 					}
 					else
 					{
-						xi = ball->col - ((25 - ball->lin) / tan((ball->dir * PI) / 180));
-						xf = ball->col - ((40 - ball->lin) / tan((ball->dir * PI) / 180));
+						xi = ball->col - ((25 - ball->lin) / tan((ball->dir * M_PI) / 180));
+						xf = ball->col - ((40 - ball->lin) / tan((ball->dir * M_PI) / 180));
 
-						yi = ball->lin - (tan((ball->dir * PI) / 180) * (160 - ball->col));
-						yf = ball->lin - (tan((ball->dir * PI) / 180) * (175 - ball->col));
+						yi = ball->lin - (tan((ball->dir * M_PI) / 180) * (160 - ball->col));
+						yf = ball->lin - (tan((ball->dir * M_PI) / 180) * (175 - ball->col));
 					}
 
 					if (xi <= 175 && xi >= 160 && ball->dir < 360 && ball->dir > 180)
@@ -853,11 +842,11 @@ Dcol = robot.getColumn() - ball->col;
 					}
 					else
 					{
-						xi = ball->col - ((91 - ball->lin) / tan((ball->dir * PI) / 180));
-						xf = ball->col - ((106 - ball->lin) / tan((ball->dir * PI) / 180));
+						xi = ball->col - ((91 - ball->lin) / tan((ball->dir * M_PI) / 180));
+						xf = ball->col - ((106 - ball->lin) / tan((ball->dir * M_PI) / 180));
 
-						yi = ball->lin - (tan((ball->dir * PI) / 180) * (25 - ball->col));
-						yf = ball->lin - (tan((ball->dir * PI) / 180) * (40 - ball->col));
+						yi = ball->lin - (tan((ball->dir * M_PI) / 180) * (25 - ball->col));
+						yf = ball->lin - (tan((ball->dir * M_PI) / 180) * (40 - ball->col));
 					}
 
 					if (xi <= 40 && xi >= 25 && ball->dir < 360 && ball->dir > 180)
@@ -919,11 +908,11 @@ Dcol = robot.getColumn() - ball->col;
 					}
 					else
 					{
-						xi = ball->col - ((91 - ball->lin) / tan((ball->dir * PI) / 180));
-						xf = ball->col - ((106 - ball->lin) / tan((ball->dir * PI) / 180));
+						xi = ball->col - ((91 - ball->lin) / tan((ball->dir * M_PI) / 180));
+						xf = ball->col - ((106 - ball->lin) / tan((ball->dir * M_PI) / 180));
 
-						yi = ball->lin - (tan((ball->dir * PI) / 180) * (91 - ball->col));
-						yf = ball->lin - (tan((ball->dir * PI) / 180) * (106 - ball->col));
+						yi = ball->lin - (tan((ball->dir * M_PI) / 180) * (91 - ball->col));
+						yf = ball->lin - (tan((ball->dir * M_PI) / 180) * (106 - ball->col));
 					}
 
 					if (xi <= 106 && xi >= 91 && ball->dir < 360 && ball->dir > 180)
@@ -985,11 +974,11 @@ Dcol = robot.getColumn() - ball->col;
 					}
 					else
 					{
-						xi = ball->col - ((91 - ball->lin) / tan((ball->dir * PI) / 180));
-						xf = ball->col - ((106 - ball->lin) / tan((ball->dir * PI) / 180));
+						xi = ball->col - ((91 - ball->lin) / tan((ball->dir * M_PI) / 180));
+						xf = ball->col - ((106 - ball->lin) / tan((ball->dir * M_PI) / 180));
 
-						yi = ball->lin - (tan((ball->dir * PI) / 180) * (160 - ball->col));
-						yf = ball->lin - (tan((ball->dir * PI) / 180) * (175 - ball->col));
+						yi = ball->lin - (tan((ball->dir * M_PI) / 180) * (160 - ball->col));
+						yf = ball->lin - (tan((ball->dir * M_PI) / 180) * (175 - ball->col));
 					}
 
 					if (xi <= 175 && xi >= 160 && ball->dir < 360 && ball->dir > 180)
@@ -1055,11 +1044,11 @@ Dcol = robot.getColumn() - ball->col;
 					}
 					else
 					{
-						xi = ball->col - ((160 - ball->lin) / tan((ball->dir * PI) / 180));
-						xf = ball->col - ((175 - ball->lin) / tan((ball->dir * PI) / 180));
+						xi = ball->col - ((160 - ball->lin) / tan((ball->dir * M_PI) / 180));
+						xf = ball->col - ((175 - ball->lin) / tan((ball->dir * M_PI) / 180));
 
-						yi = ball->lin - (tan((ball->dir * PI) / 180) * (25 - ball->col));
-						yf = ball->lin - (tan((ball->dir * PI) / 180) * (40 - ball->col));
+						yi = ball->lin - (tan((ball->dir * M_PI) / 180) * (25 - ball->col));
+						yf = ball->lin - (tan((ball->dir * M_PI) / 180) * (40 - ball->col));
 					}
 
 					if (xi <= 40 && xi >= 25 && ball->dir < 360 && ball->dir > 180)
@@ -1121,11 +1110,11 @@ Dcol = robot.getColumn() - ball->col;
 					}
 					else
 					{
-						xi = ball->col - ((160 - ball->lin) / tan((ball->dir * PI) / 180));
-						xf = ball->col - ((175 - ball->lin) / tan((ball->dir * PI) / 180));
+						xi = ball->col - ((160 - ball->lin) / tan((ball->dir * M_PI) / 180));
+						xf = ball->col - ((175 - ball->lin) / tan((ball->dir * M_PI) / 180));
 
-						yi = ball->lin - (tan((ball->dir * PI) / 180) * (91 - ball->col));
-						yf = ball->lin - (tan((ball->dir * PI) / 180) * (106 - ball->col));
+						yi = ball->lin - (tan((ball->dir * M_PI) / 180) * (91 - ball->col));
+						yf = ball->lin - (tan((ball->dir * M_PI) / 180) * (106 - ball->col));
 					}
 
 					if (xi <= 106 && xi >= 91 && ball->dir < 360 && ball->dir > 180)
@@ -1187,11 +1176,11 @@ Dcol = robot.getColumn() - ball->col;
 					}
 					else
 					{
-						xi = ball->col - ((160 - ball->lin) / tan((ball->dir * PI) / 180));
-						xf = ball->col - ((175 - ball->lin) / tan((ball->dir * PI) / 180));
+						xi = ball->col - ((160 - ball->lin) / tan((ball->dir * M_PI) / 180));
+						xf = ball->col - ((175 - ball->lin) / tan((ball->dir * M_PI) / 180));
 
-						yi = ball->lin - (tan((ball->dir * PI) / 180) * (160 - ball->col));
-						yf = ball->lin - (tan((ball->dir * PI) / 180) * (175 - ball->col));
+						yi = ball->lin - (tan((ball->dir * M_PI) / 180) * (160 - ball->col));
+						yf = ball->lin - (tan((ball->dir * M_PI) / 180) * (175 - ball->col));
 					}
 
 					if (xi <= 175 && xi >= 160 && ball->dir < 360 && ball->dir > 180)
@@ -1241,8 +1230,8 @@ Dcol = robot.getColumn() - ball->col;
 				}
 			}
 
-			testlin -= Drest * sin((PI * ball->dir) / 180);
-			testcol += Drest * cos((PI * ball->dir) / 180);
+			testlin -= Drest * sin((M_PI * ball->dir) / 180);
+			testcol += Drest * cos((M_PI * ball->dir) / 180);
 
 			Dlin = robot.lin - ball->lin;
 			Dcol = robot.col - ball->col;
@@ -1643,7 +1632,7 @@ int main(void)
 	srand(stime);
 
 	struct ind rob[POPULATION],                 //PONTEIRO INICIAL DO INDIVIDUO
-		crossing_results[CROSSING];
+	crossing_results[CROSSING];
 
 	int lin, col;                        //AUXILIARES DE IMPRESSAO DA MATRIZ
 

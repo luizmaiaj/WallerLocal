@@ -30,8 +30,8 @@ void Environment::initialize() {
 }
 
 bool Environment::isPathClear(double startLin, double startCol, double angle, int steps) const {
-    double testlin = startLin - (steps * sin((PI * angle) / 180));
-    double testcol = startCol + (steps * cos((PI * angle) / 180));
+    double testlin = startLin - (steps * sin((M_PI * angle) / 180));
+    double testcol = startCol + (steps * cos((M_PI * angle) / 180));
 
     if (testlin < 1 || testlin > HEIGHT-2 || testcol < 1 || testcol > WIDTH-2) 
         return false;

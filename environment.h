@@ -3,7 +3,6 @@
 
 #define HEIGHT 200
 #define WIDTH 200
-#define PI 3.14159265358979323846
 
 class Environment {
 private:

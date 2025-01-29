@@ -28,8 +28,8 @@ void Robot::initialize() {
 
 void Robot::walkFront() {
     double angle = dir;
-    double testlin = lin - sin((PI * angle) / 180);
-    double testcol = col + cos((PI * angle) / 180);
+    double testlin = lin - sin((M_PI * angle) / 180);
+    double testcol = col + cos((M_PI * angle) / 180);
 
     if (!env.getCell((int)testlin, (int)testcol)) {
         env.setCell((int)lin, (int)col, 0);
@@ -41,8 +41,8 @@ void Robot::walkFront() {
 
 void Robot::walkBack() {
     double angle = dir + 180;
-    double testlin = lin - sin((PI * angle) / 180);
-    double testcol = col + cos((PI * angle) / 180);
+    double testlin = lin - sin((M_PI * angle) / 180);
+    double testcol = col + cos((M_PI * angle) / 180);
 
     if (!env.getCell((int)testlin, (int)testcol)) {
         env.setCell((int)lin, (int)col, 0);
@@ -75,7 +75,7 @@ double normalizeAngle(double angle) {
 double calculateAngleBetweenPoints(double y1, double x1, double y2, double x2) {
     double dy = y2 - y1;
     double dx = x2 - x1;
-    double angle = (180 / PI) * atan2(dy, dx);
+    double angle = (180 / M_PI) * atan2(dy, dx);
     
     if (dx >= 0)
         angle = 360 - angle;
