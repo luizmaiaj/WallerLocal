@@ -48,8 +48,7 @@ int n, nbef;                          //CONTROLA NUMERO DE SORTEIOS DO INDIVIDUO
 int robot_track[HEIGHT][WIDTH];         //CAMINHO DO ROBO
 int ball_track[HEIGHT][WIDTH];          //CAMINHO DA BOLA
 
-Environment env;
-
+Environment env; // Global environment instance
 Robot robot(env);  // Global robot instance
 
 int fit, unfit, randnum;              //GUARDAM FITNESS
@@ -1415,7 +1414,7 @@ int countExistingFiles(const std::string& baseName, const std::string& extension
 //************************
 int main(void)
 {
-	//SEMENTE DO RANDOM
+	// RANDOM SEED
 	long ltime = time(NULL);
 	int stime = (unsigned)ltime / 2;
 	srand(stime);
@@ -1443,8 +1442,6 @@ int main(void)
 
 	unsigned char best_track[HEIGHT][WIDTH][3];
 
-	// Robot is now handled by the global Robot instance
-
 	struct ball_data ball;                 //GUARDA TODOS OS DADOS NECESSARIOS DA BOLA
 
 	int generation, nsort, num;
@@ -1466,14 +1463,12 @@ int main(void)
 	//ALOCA INICIO PARA INDIVIDUOS EM ARQUIVO
 	//---------------------------------------
 	printf("\n\t\tCarregando\n");
-	for (i = 0; i < 100; i++)
-	{
+	for (i = 0; i < 100; i++) {
 		char filename[20];
 
 		snprintf(filename, sizeof(filename), "robots/rb%.3dtr.txt", i);
 
-		if ((file_pointer = fopen(filename, "r")) == NULL)
-		{
+		if ((file_pointer = fopen(filename, "r")) == NULL) {
 			printf("\n\tNao existem sucessores para \"%s\"!!!", filename);
 			printf("\n\tNovos individuos serao criados.\n\n");
 
@@ -1537,8 +1532,7 @@ int main(void)
 	//*******************
 	//* INICIA GERACOES *
 	//*******************
-	for (generation = 0; generation < GENS; generation++)
-	{
+	for (generation = 0; generation < GENS; generation++) {
 		generation_average = generation_maximum = 0;
 
 		//EXECUCAO DO INDIVIDUO
@@ -1546,8 +1540,7 @@ int main(void)
 
 		best = 0;
 
-		for (i = 0; i < POPULATION; i++)
-		{
+		for (i = 0; i < POPULATION; i++) {
 			double aux, aux1;
 
 			aux1 = i;
@@ -1572,15 +1565,13 @@ int main(void)
 					for (col = 0; col < WIDTH; col++)
 						ball_track[lin][col] = robot_track[lin][col] = 0;
 
-
 				fit = unfit = ball_hits = 0;
 
 				robot.initialize();
-                                initializeBall(&ball);
+                initializeBall(&ball);
 
 				robot_track[(int)robot.getLine()][(int)robot.getColumn()] = 1;
 				ball_track[(int)ball.lin][(int)ball.col] = 1;
-
 
 				distance[0] = 0;
 
@@ -1595,7 +1586,6 @@ int main(void)
 					initial_distance = sqrt((Dlin * Dlin) + (Dcol * Dcol));
 				}
 
-
 				for (n = 0; n < EXECUTE;)
 					execute(rob[i].root, &ball);
 
@@ -1603,14 +1593,8 @@ int main(void)
 				//CALCULO DO FITNESS
 
 				rob[i].fitness += 1500 * ball_hits - unfit;
-				//rob[i].fitness += 100 * ball_hits - unfit;
 
-				//printf("\n\n%d\n\n", unfit); fflush(stdout);
-
-				//****************************************************
-
-				if (rob[i].fitness >= best && j == (RUNS - 1))
-				{
+				if (rob[i].fitness >= best && j == (RUNS - 1)) {
 					setbest(best_track);    //MATRIZ QUE VAI VIRAR IMAGEM
 					drawboxim(best_track, 25, 25, 16);
 					drawboxim(best_track, 25, 91, 16);
@@ -1624,31 +1608,27 @@ int main(void)
 
 					best = rob[i].fitness;
 
-					for (lin = 0; lin < HEIGHT; lin++)
-						for (col = 0; col < WIDTH; col++)
-						{
-							if (robot_track[lin][col] > 0)
-							{
-								if (robot_track[lin][col] < 20)
-								{
+					for(lin = 0; lin < HEIGHT; lin++) {
+						for (col = 0; col < WIDTH; col++) {
+							if (robot_track[lin][col] > 0) {
+								if (robot_track[lin][col] < 20) {
 									best_track[lin][col][0] = 255;
 									best_track[lin][col][1] = 255;
 									best_track[lin][col][2] = 0;
-								}
-								else
-								{
+								} else {
 									best_track[lin][col][0] = 255;
 									best_track[lin][col][1] = 0;
 									best_track[lin][col][2] = 0;
 								}
 							}
-							if (ball_track[lin][col] == 1)
-							{
+
+							if (ball_track[lin][col] == 1) {
 								best_track[lin][col][0] = 0;
 								best_track[lin][col][1] = 255;
 								best_track[lin][col][2] = 0;
 							}
 						}
+					}
 				}
 			}
 
@@ -1698,8 +1678,7 @@ int main(void)
 					crosspoint[i] = (rand() % (length(parent[i].root) - 1)) + 2;
 				}
 
-				for (i = 0; i < 2; i++)
-				{
+				for (i = 0; i < 2; i++) {
 					n = crosspoint[i] - 1;
 
 					count(parent[i].root);
@@ -1765,8 +1744,7 @@ int main(void)
 				*/
 			printf("\n\t\tManuseio de memoria\n");
 
-			for (num = 0; num < CROSSING; num++)
-			{
+			for (num = 0; num < CROSSING; num++) {
 				freemem(rob[REPRODUCTION + num].root);     //LIBERA 'ROB'
 
 				rob[REPRODUCTION + num].root = alloc();    //REALOCA 'ROB'
@@ -1774,13 +1752,11 @@ int main(void)
 
 				rob[REPRODUCTION + num].root = crossing_results[num].root;
 			}
-
 		}
 
 		printf("\n\t\tGeracao: %d", generation);
 
-		for (num = 0; num < POPULATION; num++)
-		{
+		for (num = 0; num < POPULATION; num++) {
 			generation_average += rob[num].fitness;
 
 			if (rob[num].fitness > generation_maximum)
