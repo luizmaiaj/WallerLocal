@@ -141,8 +141,9 @@ private:
     RobotEvaluator evaluator;
     
     // Parameters (from original code)
-    static constexpr int RUNS = 1;          // Number of tests per individual
-    static constexpr int EXECUTE = 2000;    // Number of tree executions per test
+    // TODO: commenting for now, to uncomment once the old code is fully replaced
+    // static constexpr int RUNS = 1;          // Number of tests per individual
+    // static constexpr int EXECUTE = 2000;    // Number of tree executions per test
     
     // Evaluate a single run
     double evaluate_run(const gp::Tree<RobotNodeValue>& tree) {
@@ -211,9 +212,34 @@ private:
                 unfit += (step - last_hit_step) / initial_distance;
                 last_hit_step = step;
                 
-                // Move ball
+                // Move ball after hit
                 ball.dir = robot.getDirection();
-                // TODO: Implement ball movement
+                int ball_movements = 40;  // Fixed number of movements after hit
+                
+                // Move ball
+                if (ball_movements > 0) {
+                    ball_movements--;
+                    
+                    // Calculate next position
+                    double testlin = ball.lin - (2 * std::sin((M_PI * ball.dir) / 180));
+                    double testcol = ball.col + (2 * std::cos((M_PI * ball.dir) / 180));
+                    
+                    // Check bounds and adjust position
+                    if (testlin < 0 || testlin > HEIGHT-1 || 
+                        testcol < 0 || testcol > WIDTH-1 ||
+                        env.getCell((int)testlin, (int)testcol)) {
+                        // If hitting wall or obstacle, bounce
+                        ball.dir = (ball.dir + 180) % 360;
+                        testlin = ball.lin - (2 * std::sin((M_PI * ball.dir) / 180));
+                        testcol = ball.col + (2 * std::cos((M_PI * ball.dir) / 180));
+                    }
+                    
+                    // Update ball position
+                    env.setCell((int)ball.lin, (int)ball.col, 0);
+                    ball.lin = testlin;
+                    ball.col = testcol;
+                    env.setCell((int)ball.lin, (int)ball.col, 1);
+                }
             }
         }
         
