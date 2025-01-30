@@ -282,6 +282,28 @@ public:
         }
     }
 
+    struct EvolutionStats {
+        double best_fitness;
+        double average_fitness;
+    };
+
+    [[nodiscard]] const Tree<T>& get_individual(size_t index) const {
+        if (index >= population.size()) {
+            throw std::out_of_range("Individual index out of range");
+        }
+        return population[index];
+    }
+
+    [[nodiscard]] EvolutionStats evolve_with_stats() {
+        // Get initial stats
+        EvolutionStats initial_stats = calculate_stats();
+
+        evolve();
+
+        // Return final stats
+        return calculate_stats();
+    }
+
     void evolve() {
         for (std::size_t gen = 0; gen < params.generations; ++gen) {
             // Evaluate fitness for all individuals

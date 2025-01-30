@@ -134,7 +134,7 @@ int main() {
     params.max_nodes = 100;     // New parameter for safety
 
     // Create GP engine
-    gp::GPEngine gp_engine(params, fitness_evaluator);
+    gp::GPEngine<robot_gp::RobotNodeValue, robot_gp::FitnessEvaluator> gp_engine(params, fitness_evaluator);
 
     // Setup data logging
     auto data_file_count = countExistingFiles("data/data", ".txt");
