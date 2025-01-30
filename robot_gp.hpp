@@ -3,6 +3,8 @@
 
 #include "gp_engine.hpp"
 #include "robot.h"
+#include "constants.h"
+#include <cmath>
 
 struct ball_data {
     int dir;
@@ -130,6 +132,114 @@ public:
 };
 
 // Tree generator for robot programs
+// Fitness evaluator for robot programs
+class FitnessEvaluator {
+private:
+    Environment& env;
+    Robot& robot;
+    ball_data& ball;
+    RobotEvaluator evaluator;
+    
+    // Parameters (from original code)
+    static constexpr int RUNS = 1;          // Number of tests per individual
+    static constexpr int EXECUTE = 2000;    // Number of tree executions per test
+    
+    // Evaluate a single run
+    double evaluate_run(const gp::Tree<RobotNodeValue>& tree) {
+        // Initialize environment and positions
+        env.initialize();
+        robot.initialize();
+        
+        // Reset tracking and hits
+        int hits = 0;
+        int unfit = 0;
+        double distance[2] = {0.0, 0.0};
+        int step = 0;
+        int last_hit_step = 0;
+        
+        // Initialize ball position
+        do {
+            ball.col = rand() % (WIDTH-2) + 1;
+            ball.lin = rand() % (HEIGHT-2) + 1;
+        } while (env.getCell(ball.lin, ball.col));
+        env.setCell(ball.lin, ball.col, 1);
+        
+        // Calculate initial distance
+        double initial_distance = std::sqrt(
+            std::pow(ball.lin - robot.getLine(), 2) +
+            std::pow(ball.col - robot.getColumn(), 2)
+        );
+        
+        // Execute program
+        for (; step < EXECUTE; ++step) {
+            // Execute one node of the program
+            auto* current = tree.root.get();
+            if (!current) break;
+            
+            switch (current->value.value.cmd) {
+                case RobotCommand::PROGN3:
+                    evaluator.execute_command(current->children[0]->value.value);
+                    evaluator.execute_command(current->children[1]->value.value);
+                    evaluator.execute_command(current->children[2]->value.value);
+                    break;
+                case RobotCommand::PROGN2:
+                    evaluator.execute_command(current->children[0]->value.value);
+                    evaluator.execute_command(current->children[1]->value.value);
+                    break;
+                case RobotCommand::IFWALL:
+                    evaluator.execute_command(
+                        current->children[evaluator.check_condition(current->value.value) ? 0 : 1]->value.value
+                    );
+                    break;
+                case RobotCommand::IFBALL:
+                    evaluator.execute_command(
+                        current->children[evaluator.check_condition(current->value.value) ? 0 : 1]->value.value
+                    );
+                    break;
+                default:
+                    evaluator.execute_command(current->value.value);
+            }
+            
+            // Check if robot hit ball
+            double hit_distance = std::sqrt(
+                std::pow(ball.lin - robot.getLine(), 2) +
+                std::pow(ball.col - robot.getColumn(), 2)
+            );
+            
+            if (hit_distance <= HIT_DISTANCE) {
+                hits++;
+                unfit += (step - last_hit_step) / initial_distance;
+                last_hit_step = step;
+                
+                // Move ball
+                ball.dir = robot.getDirection();
+                // TODO: Implement ball movement
+            }
+        }
+        
+        // Calculate fitness
+        return 1500 * hits - unfit;
+    }
+
+public:
+    FitnessEvaluator(Environment& environment, Robot& r, ball_data& b)
+        : env(environment)
+        , robot(r)
+        , ball(b)
+        , evaluator(r, b) {}
+    
+    double operator()(const gp::Tree<RobotNodeValue>& tree) {
+        double total_fitness = 0.0;
+        
+        // Run multiple evaluations
+        for (int run = 0; run < RUNS; ++run) {
+            total_fitness += evaluate_run(tree);
+        }
+        
+        return total_fitness / RUNS;
+    }
+};
+
 class TreeGenerator {
 private:
     std::mt19937& rng;
