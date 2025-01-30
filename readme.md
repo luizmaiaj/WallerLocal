@@ -76,3 +76,11 @@ This project is part of a series of three robot evolution simulations:
 3. WallerRestricted: Implements discrete movement in a smaller environment
 
 Each variation explores different aspects of evolutionary robotics and navigation strategies.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Disclaimer
+
+This software is provided "as is", without warranty of any kind. Use at your own risk.
