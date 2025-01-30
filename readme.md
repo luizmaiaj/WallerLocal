@@ -1,50 +1,72 @@
-# WallerLocal - Local Vision Ball-Following Robot Evolution
+# Robot Ball-Following Simulation
 
 ## Overview
 WallerLocal implements genetic algorithm-based evolution of robot behavior for tracking and following a moving ball in an environment with obstacles. The robot must develop efficient ball-following strategies using only local perception.
 
-## Technical Specifications
-
-### Environment
+## Objective
+The robot navigates a matrix environment to reach a ball while:
 - 200x200 grid world
-- Multiple fixed obstacles
-- Moving ball with physics-based behavior
-- Continuous movement and positioning
+- Avoiding multiple fixed obstacles
+- Continuously tracking the moving ball with physics-based behavior
+- Minimizing movement continuous movement and repositioning
+- Adapting to random initial positions
 
-### Robot Capabilities
+## Robot Capabilities
 - Local vision (30-degree cone)
 - 5-degree angular turns
 - Forward/backward movement
 - Ball detection and tracking
 - Obstacle avoidance
 
-### Genetic Algorithm Parameters
-- Population size: 500 individuals
-- Generations: 51
-- Selection ratio: 70% crossover, 30% reproduction
-- Maximum individual complexity: 1000 nodes
-- Single evaluation run per individual
-- 2000 execution steps per run
+## Constants
+```cpp
+#define GENS 51          // Number of generations
+#define POPULATION 500   // Population size
+#define CROSSING 350     // 70% of population for crossover
+#define REPRODUCTION 150 // 30% of population for reproduction
+#define HEIGHT 200       // Matrix height
+#define WIDTH 200        // Matrix width
+#define RUNS 1          // Number of tests per individual
+#define EXECUTE 2000    // Number of tree executions per test
+#define LIMIT 1000      // Individual complexity limit
+#define ANGLE 5         // Robot turning angle
+#define HIT_DISTANCE 1  // Ball touch detection distance
+#define VIEW_ANGLE 30   // Local vision angle
+```
 
-### Available Functions
-- `PROGN3`: Executes three branches sequentially
-- `PROGN2`: Executes two branches sequentially
-- `IFWALL`: Conditional wall detection branching
-- `IFBALL`: Conditional ball detection branching
+## Fitness Evaluation
+The fitness function considers:
+- Initial distance between robot and ball
+- Distance after each ball touch
+- Number of robot steps (movement efficiency)
+- Number of successful ball hits
 
-### Terminal Operations
-- `WALKFRONT`: Move forward
-- `WALKBACK`: Move backward
-- `RIGHT`: Turn right 5 degrees
-- `LEFT`: Turn left 5 degrees
-- `ALIGN`: Orient towards ball (max 30 degrees)
+## Functions
+- `PROGN3 (3)`: Executes three branches in sequence
+- `PROGN2 (2)`: Executes two branches in sequence
+- `IFWALL (I)`: Executes left branch if wall detected, right branch otherwise
+- `IFBALL (C)`: Executes left branch if ball in sight, right branch otherwise
 
-### Fitness Function
-Based on:
-- Ball hits achieved
-- Initial distance to ball
-- Movement efficiency
-- Calculated as: `1500 * ball_hits - unfit`
+## Terminal Operations
+- `WALKFRONT (F)`: Move forward
+- `WALKBACK (B)`: Move backward
+- `RIGHT (R)`: Turn right (depends on ANGLE)
+- `LEFT (L)`: Turn left (depends on ANGLE)
+- `ALIGN (A)`: Orient towards ball (max 30 degrees)
+
+## Key Parameters
+- Number of generations: Set by GENS
+- Population size: Set by POPULATION
+- Reproduction probability: Set by REPRODUCTION
+- Crossover probability: Set by CROSSING
+- Mutation probability: 0%
+
+## Implementation Notes
+- Individual complexity is limited by LIMIT parameter
+- Uses local vision system
+- Includes ball tracking function
+- Features memory-efficient design
+- Implements obstacle detection
 
 ## Project Comparison
 This project is part of a series of three robot evolution simulations:
