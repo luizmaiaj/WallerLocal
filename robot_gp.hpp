@@ -129,6 +129,92 @@ public:
     }
 };
 
+// Tree generator for robot programs
+class TreeGenerator {
+private:
+    std::mt19937& rng;
+
+public:
+    explicit TreeGenerator(std::mt19937& random_engine) : rng(random_engine) {}
+
+    // Generate random terminal command
+    RobotNodeValue generate_terminal() {
+        static const RobotCommand terminals[] = {
+            RobotCommand::WALKFRONT,
+            RobotCommand::WALKBACK,
+            RobotCommand::LEFT,
+            RobotCommand::RIGHT,
+            RobotCommand::ALIGN
+        };
+        
+        std::uniform_int_distribution<size_t> dist(0, std::size(terminals) - 1);
+        return RobotNodeValue{terminals[dist(rng)]};
+    }
+
+    // Generate random function command
+    RobotNodeValue generate_function() {
+        static const RobotCommand functions[] = {
+            RobotCommand::PROGN3,
+            RobotCommand::PROGN2,
+            RobotCommand::IFWALL,
+            RobotCommand::IFBALL
+        };
+        
+        std::uniform_int_distribution<size_t> dist(0, std::size(functions) - 1);
+        return RobotNodeValue{functions[dist(rng)]};
+    }
+
+    // Point mutation - changes command while preserving arity
+    RobotNodeValue point_mutate(const RobotNodeValue& old_value) {
+        if (old_value.is_function()) {
+            // Mutate to another function with same arity
+            size_t old_arity = old_value.children_count();
+            RobotNodeValue new_value;
+            do {
+                new_value = generate_function();
+            } while (new_value.children_count() != old_arity);
+            return new_value;
+        } else {
+            // Mutate to another terminal
+            return generate_terminal();
+        }
+    }
+
+    // Create a complete random tree
+    gp::Tree<RobotNodeValue> generate_tree(size_t max_depth) {
+        using namespace gp;
+        Tree<RobotNodeValue> tree;
+        
+        // Create root node
+        tree.root = std::make_unique<Node<RobotNodeValue>>(generate_function());
+        
+        // Build tree recursively
+        std::function<void(Node<RobotNodeValue>*, size_t)> build_tree;
+        build_tree = [this, &build_tree](Node<RobotNodeValue>* node, size_t depth) {
+            size_t num_children = node->value.value.children_count();
+            
+            for (size_t i = 0; i < num_children; ++i) {
+                RobotNodeValue child_value;
+                if (depth <= 1) {
+                    child_value = generate_terminal();
+                } else {
+                    std::uniform_int_distribution<int> dist(0, 1);
+                    child_value = dist(rng) == 0 ? generate_terminal() : generate_function();
+                }
+                
+                auto child = std::make_unique<Node<RobotNodeValue>>(child_value);
+                if (child_value.is_function() && depth > 1) {
+                    build_tree(child.get(), depth - 1);
+                }
+                node->add_child(std::move(child));
+            }
+        };
+        
+        build_tree(tree.root.get(), max_depth);
+        return tree;
+    }
+};
+
 } // namespace robot_gp
 
 #endif // ROBOT_GP_HPP
