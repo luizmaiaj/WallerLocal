@@ -2,6 +2,7 @@
 //
 
 #include <sstream>
+#include <fstream>
 #include <string>
 #include <iomanip>
 #include <filesystem>
@@ -370,7 +371,6 @@ struct tree* maketree(struct tree* pointer)
 {
 	struct tree* aux;
 
-
 	pointer = sort(pointer);  //RECEBE INFORMACAO SORTEADA
 
 	if (pointer->left)  //CHECA VALIDADE DO PONTEIRO
@@ -413,15 +413,12 @@ struct tree* maketree(struct tree* pointer)
 //* RECEBE UM RAMO E UM PONTEIRO E       *
 //* FAZ UMA COPIA DO SEGUNDO NO PRIMEIRO *
 //****************************************
-struct tree* copy(struct tree* pointer1, struct tree* pointer2)
-{
+struct tree* copy(struct tree* pointer1, struct tree* pointer2) {
 	struct tree* aux;
-
 
 	pointer1->info = pointer2->info;
 
-	if (pointer2->left)
-	{
+	if (pointer2->left) {
 		aux = alloc();
 
 		pointer1->left = aux;
@@ -429,11 +426,10 @@ struct tree* copy(struct tree* pointer1, struct tree* pointer2)
 		aux->top = pointer1;
 
 		copy(aux, pointer2->left);
-	}
-	else pointer1->left = NULL;
+	} else
+		pointer1->left = NULL;
 
-	if (pointer2->center)
-	{
+	if (pointer2->center) {
 		aux = alloc();
 
 		pointer1->center = aux;
@@ -441,11 +437,10 @@ struct tree* copy(struct tree* pointer1, struct tree* pointer2)
 		aux->top = pointer1;
 
 		copy(aux, pointer2->center);
-	}
-	else pointer1->center = NULL;
+	} else
+		pointer1->center = NULL;
 
-	if (pointer2->right)
-	{
+	if (pointer2->right) {
 		aux = alloc();
 
 		pointer1->right = aux;
@@ -453,8 +448,8 @@ struct tree* copy(struct tree* pointer1, struct tree* pointer2)
 		aux->top = pointer1;
 
 		copy(aux, pointer2->right);
-	}
-	else pointer1->right = NULL;
+	} else
+		pointer1->right = NULL;
 
 	return(pointer1);
 }
@@ -463,8 +458,7 @@ struct tree* copy(struct tree* pointer1, struct tree* pointer2)
 //* RECEVE INDIVIDUO     *
 //* E O IMPRIME NO VIDEO *
 //************************
-void print(struct tree* pointer)
-{
+void print(struct tree* pointer) {
 	printf("%c ", pointer->info);
 
 	if (pointer->left)
@@ -481,8 +475,7 @@ void print(struct tree* pointer)
 //* RECEBE DADOS DA BOLA E DO ROBO E        *
 //* MOVIMENTA BOLA DE ACORDO COM O AMBIENTE *
 //*******************************************
-void moveball(struct ball_data* ball, const Robot& robot)
-{
+void moveball(struct ball_data* ball, const Robot& robot) {
 	double testlin = 0, testcol = 0, Drest = 0, xi, xf, yi, yf, Dlin, Dcol;
 	double lin, col;
 	int angle;
@@ -499,30 +492,21 @@ void moveball(struct ball_data* ball, const Robot& robot)
 
 	angle = ball->dir;
 
-	if (ball_movements > 0)
-	{
+	if (ball_movements > 0) {
 		ball_movements--;
 
 		testlin = ball->lin - (2 * sin((M_PI * ball->dir) / 180));
 		testcol = ball->col + (2 * cos((M_PI * ball->dir) / 180));
 
-
-		if (testlin < 0 || testlin > 199 || testcol < 0 || testcol > 199)  //REFLEXAO EXTERNA
-		{
-			while (testlin < 0 || testlin > 199 || testcol < 0 || testcol > 199)
-			{
-				if (ball->dir == 90 || ball->dir == 270)
-				{
+		if (testlin < 0 || testlin > 199 || testcol < 0 || testcol > 199) {
+			while (testlin < 0 || testlin > 199 || testcol < 0 || testcol > 199) {
+				if (ball->dir == 90 || ball->dir == 270) {
 					xi = xf = ball->col;
 					yi = yf = -1;
-				}
-				else if (ball->dir == 0 || ball->dir == 180)
-				{
+				} else if (ball->dir == 0 || ball->dir == 180) {
 					xi = xf = -1;
 					yi = yf = ball->lin;
-				}
-				else
-				{
+				} else {
 					xi = ball->col + (ball->lin / tan((ball->dir * M_PI) / 180));
 					xf = ball->col - ((199 - ball->lin) / tan((ball->dir * M_PI) / 180));
 
@@ -530,8 +514,7 @@ void moveball(struct ball_data* ball, const Robot& robot)
 					yf = ball->lin - (tan((ball->dir * M_PI) / 180) * (199 - ball->col));
 				}
 
-				if (ball->dir > 0 && ball->dir < 180 && xi <= 199 && xi >= 0)
-				{
+				if (ball->dir > 0 && ball->dir < 180 && xi <= 199 && xi >= 0) {
 					Dlin = ball->lin;
 					Dcol = xi - ball->col;
 					Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -545,9 +528,7 @@ void moveball(struct ball_data* ball, const Robot& robot)
 						ball->dir = 315;
 					else
 						ball->dir = 360 - ball->dir;
-				}
-				else if (ball->dir < 270 && ball->dir > 90 && yi <= 199 && yi >= 0)
-				{
+				} else if (ball->dir < 270 && ball->dir > 90 && yi <= 199 && yi >= 0) {
 					Dlin = yi - ball->lin;
 					Dcol = ball->col;
 					Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -561,9 +542,7 @@ void moveball(struct ball_data* ball, const Robot& robot)
 						ball->dir = 315;
 					else
 						ball->dir = 180 - ball->dir;
-				}
-				else if (ball->dir < 360 && ball->dir > 180 && xf <= 199 && xf >= 0)
-				{
+				} else if (ball->dir < 360 && ball->dir > 180 && xf <= 199 && xf >= 0) {
 					Dlin = 199 - ball->lin;
 					Dcol = xf - ball->col;
 					Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -577,9 +556,7 @@ void moveball(struct ball_data* ball, const Robot& robot)
 						ball->dir = 45;
 					else
 						ball->dir = 360 - ball->dir;
-				}
-				else if (((ball->dir < 90 && ball->dir >= 0) || (ball->dir <= 360 && ball->dir > 270)) && yf <= 199 && yf >= 0)
-				{
+				} else if (((ball->dir < 90 && ball->dir >= 0) || (ball->dir <= 360 && ball->dir > 270)) && yf <= 199 && yf >= 0) {
 					Dlin = yf - ball->lin;
 					Dcol = 199 - ball->col;
 					Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -593,9 +570,7 @@ void moveball(struct ball_data* ball, const Robot& robot)
 						ball->dir = 225;
 					else
 						ball->dir = 180 - ball->dir;
-				}
-				else
-				{
+				} else {
 					ball->dir -= 180;
 				}
 
@@ -612,29 +587,20 @@ void moveball(struct ball_data* ball, const Robot& robot)
 			}
 
 			Dlin = robot.getLine() - ball->lin;
-Dcol = robot.getColumn() - ball->col;
+			Dcol = robot.getColumn() - ball->col;
 			initial_distance = sqrt((Dlin * Dlin) + (Dcol * Dcol));
-		}
 
-		else if (env.getCell((int)testlin, (int)testcol) && (int)testlin < 197 && (int)testlin > 2
-			&& (int)testcol < 197 && (int)testcol > 2)  //REFLEXAO INTERNA
-		{
-			if ((int)testlin < 66)
-			{
-				if ((int)testcol < 66)
-				{
-					if (ball->dir == 90 || ball->dir == 270)
-					{
+		} else if (env.getCell((int)testlin, (int)testcol) && (int)testlin < 197 && (int)testlin > 2
+			&& (int)testcol < 197 && (int)testcol > 2) {
+			if ((int)testlin < 66) {
+				if ((int)testcol < 66) {
+					if (ball->dir == 90 || ball->dir == 270) {
 						xi = xf = ball->col;
 						yi = yf = -1;
-					}
-					else if (ball->dir == 0 || ball->dir == 180)
-					{
+					} else if (ball->dir == 0 || ball->dir == 180) {
 						xi = xf = -1;
 						yi = yf = ball->lin;
-					}
-					else
-					{
+					} else {
 						xi = ball->col - ((25 - ball->lin) / tan((ball->dir * M_PI) / 180));
 						xf = ball->col - ((40 - ball->lin) / tan((ball->dir * M_PI) / 180));
 
@@ -642,8 +608,7 @@ Dcol = robot.getColumn() - ball->col;
 						yf = ball->lin - (tan((ball->dir * M_PI) / 180) * (40 - ball->col));
 					}
 
-					if (xi <= 40 && xi >= 25 && ball->dir < 360 && ball->dir > 180)
-					{
+					if (xi <= 40 && xi >= 25 && ball->dir < 360 && ball->dir > 180) {
 						Dlin = 25 - ball->lin;
 						Dcol = xi - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -652,9 +617,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = xi;
 
 						ball->dir = 360 - ball->dir;
-					}
-					else if (xf <= 40 && xf >= 25 && ball->dir < 180 && ball->dir > 0)
-					{
+					} else if (xf <= 40 && xf >= 25 && ball->dir < 180 && ball->dir > 0) {
 						Dlin = 40 - ball->lin;
 						Dcol = xf - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -663,9 +626,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = xf;
 
 						ball->dir = 360 - ball->dir;
-					}
-					else if (yi <= 40 && yi >= 25 && ((ball->dir < 90 && ball->dir >= 0) || (ball->dir <= 360 && ball->dir > 270)))
-					{
+					} else if (yi <= 40 && yi >= 25 && ((ball->dir < 90 && ball->dir >= 0) || (ball->dir <= 360 && ball->dir > 270))) {
 						Dlin = yi - ball->lin;
 						Dcol = 25 - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -674,9 +635,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = 24;
 
 						ball->dir = 180 - ball->dir;
-					}
-					else if (yf <= 40 && yf >= 25 && ball->dir < 270 && ball->dir > 90)
-					{
+					} else if (yf <= 40 && yf >= 25 && ball->dir < 270 && ball->dir > 90) {
 						Dlin = yf - ball->lin;
 						Dcol = 40 - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -686,21 +645,14 @@ Dcol = robot.getColumn() - ball->col;
 
 						ball->dir = 180 - ball->dir;
 					}
-				}
-				else if ((int)testcol < 132)
-				{
-					if (ball->dir == 90 || ball->dir == 270)
-					{
+				} else if ((int)testcol < 132) {
+					if (ball->dir == 90 || ball->dir == 270) {
 						xi = xf = ball->col;
 						yi = yf = -1;
-					}
-					else if (ball->dir == 0 || ball->dir == 180)
-					{
+					} else if (ball->dir == 0 || ball->dir == 180) {
 						xi = xf = -1;
 						yi = yf = ball->lin;
-					}
-					else
-					{
+					} else {
 						xi = ball->col - ((25 - ball->lin) / tan((ball->dir * M_PI) / 180));
 						xf = ball->col - ((40 - ball->lin) / tan((ball->dir * M_PI) / 180));
 
@@ -708,8 +660,7 @@ Dcol = robot.getColumn() - ball->col;
 						yf = ball->lin - (tan((ball->dir * M_PI) / 180) * (106 - ball->col));
 					}
 
-					if (xi <= 106 && xi >= 91 && ball->dir < 360 && ball->dir > 180)
-					{
+					if (xi <= 106 && xi >= 91 && ball->dir < 360 && ball->dir > 180) {
 						Dlin = 25 - ball->lin;
 						Dcol = xi - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -718,9 +669,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = xi;
 
 						ball->dir = 360 - ball->dir;
-					}
-					else if (xf <= 106 && xf >= 91 && ball->dir < 180 && ball->dir > 0)
-					{
+					} else if (xf <= 106 && xf >= 91 && ball->dir < 180 && ball->dir > 0) {
 						Dlin = 40 - ball->lin;
 						Dcol = xf - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -729,9 +678,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = xf;
 
 						ball->dir = 360 - ball->dir;
-					}
-					else if (yi <= 40 && yi >= 25 && ((ball->dir < 90 && ball->dir >= 0) || (ball->dir <= 360 && ball->dir > 270)))
-					{
+					} else if (yi <= 40 && yi >= 25 && ((ball->dir < 90 && ball->dir >= 0) || (ball->dir <= 360 && ball->dir > 270))) {
 						Dlin = yi - ball->lin;
 						Dcol = 91 - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -740,9 +687,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = 90;
 
 						ball->dir = 180 - ball->dir;
-					}
-					else if (yf <= 40 && yf >= 25 && ball->dir < 270 && ball->dir > 90)
-					{
+					} else if (yf <= 40 && yf >= 25 && ball->dir < 270 && ball->dir > 90) {
 						Dlin = yf - ball->lin;
 						Dcol = 106 - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -752,21 +697,14 @@ Dcol = robot.getColumn() - ball->col;
 
 						ball->dir = 180 - ball->dir;
 					}
-				}
-				else
-				{
-					if (ball->dir == 90 || ball->dir == 270)
-					{
+				} else {
+					if (ball->dir == 90 || ball->dir == 270) {
 						xi = xf = ball->col;
 						yi = yf = -1;
-					}
-					else if (ball->dir == 0 || ball->dir == 180)
-					{
+					} else if (ball->dir == 0 || ball->dir == 180) {
 						xi = xf = -1;
 						yi = yf = ball->lin;
-					}
-					else
-					{
+					} else {
 						xi = ball->col - ((25 - ball->lin) / tan((ball->dir * M_PI) / 180));
 						xf = ball->col - ((40 - ball->lin) / tan((ball->dir * M_PI) / 180));
 
@@ -774,8 +712,7 @@ Dcol = robot.getColumn() - ball->col;
 						yf = ball->lin - (tan((ball->dir * M_PI) / 180) * (175 - ball->col));
 					}
 
-					if (xi <= 175 && xi >= 160 && ball->dir < 360 && ball->dir > 180)
-					{
+					if (xi <= 175 && xi >= 160 && ball->dir < 360 && ball->dir > 180) {
 						Dlin = 25 - ball->lin;
 						Dcol = xi - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -784,9 +721,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = xi;
 
 						ball->dir = 360 - ball->dir;
-					}
-					else if (xf <= 175 && xf >= 160 && ball->dir < 180 && ball->dir > 0)
-					{
+					} else if (xf <= 175 && xf >= 160 && ball->dir < 180 && ball->dir > 0) {
 						Dlin = 40 - ball->lin;
 						Dcol = xf - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -795,9 +730,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = xf;
 
 						ball->dir = 360 - ball->dir;
-					}
-					else if (yi <= 40 && yi >= 25 && ((ball->dir < 90 && ball->dir >= 0) || (ball->dir <= 360 && ball->dir > 270)))
-					{
+					} else if (yi <= 40 && yi >= 25 && ((ball->dir < 90 && ball->dir >= 0) || (ball->dir <= 360 && ball->dir > 270))) {
 						Dlin = yi - ball->lin;
 						Dcol = 160 - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -806,9 +739,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = 159;
 
 						ball->dir = 180 - ball->dir;
-					}
-					else if (yf <= 40 && yf >= 25 && ball->dir < 270 && ball->dir > 90)
-					{
+					} else if (yf <= 40 && yf >= 25 && ball->dir < 270 && ball->dir > 90) {
 						Dlin = yf - ball->lin;
 						Dcol = 175 - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -819,24 +750,15 @@ Dcol = robot.getColumn() - ball->col;
 						ball->dir = 180 - ball->dir;
 					}
 				}
-			}
-
-			else if ((int)testlin < 132)
-			{
-				if ((int)testcol < 66)
-				{
-					if (ball->dir == 90 || ball->dir == 270)
-					{
+			} else if ((int)testlin < 132) {
+				if ((int)testcol < 66) {
+					if (ball->dir == 90 || ball->dir == 270) {
 						xi = xf = ball->col;
 						yi = yf = -1;
-					}
-					else if (ball->dir == 0 || ball->dir == 180)
-					{
+					} else if (ball->dir == 0 || ball->dir == 180) {
 						xi = xf = -1;
 						yi = yf = ball->lin;
-					}
-					else
-					{
+					} else {
 						xi = ball->col - ((91 - ball->lin) / tan((ball->dir * M_PI) / 180));
 						xf = ball->col - ((106 - ball->lin) / tan((ball->dir * M_PI) / 180));
 
@@ -844,8 +766,7 @@ Dcol = robot.getColumn() - ball->col;
 						yf = ball->lin - (tan((ball->dir * M_PI) / 180) * (40 - ball->col));
 					}
 
-					if (xi <= 40 && xi >= 25 && ball->dir < 360 && ball->dir > 180)
-					{
+					if (xi <= 40 && xi >= 25 && ball->dir < 360 && ball->dir > 180) {
 						Dlin = 91 - ball->lin;
 						Dcol = xi - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -854,9 +775,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = xi;
 
 						ball->dir = 360 - ball->dir;
-					}
-					else if (xf <= 40 && xf >= 25 && ball->dir < 180 && ball->dir > 0)
-					{
+					} else if (xf <= 40 && xf >= 25 && ball->dir < 180 && ball->dir > 0) {
 						Dlin = 106 - ball->lin;
 						Dcol = xf - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -865,9 +784,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = xf;
 
 						ball->dir = 360 - ball->dir;
-					}
-					else if (yi <= 106 && yi >= 91 && ((ball->dir < 90 && ball->dir >= 0) || (ball->dir <= 360 && ball->dir > 270)))
-					{
+					} else if (yi <= 106 && yi >= 91 && ((ball->dir < 90 && ball->dir >= 0) || (ball->dir <= 360 && ball->dir > 270))) {
 						Dlin = yi - ball->lin;
 						Dcol = 25 - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -876,9 +793,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = 24;
 
 						ball->dir = 180 - ball->dir;
-					}
-					else if (yf <= 106 && yf >= 91 && ball->dir < 270 && ball->dir > 90)
-					{
+					} else if (yf <= 106 && yf >= 91 && ball->dir < 270 && ball->dir > 90) {
 						Dlin = yf - ball->lin;
 						Dcol = 40 - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -888,21 +803,14 @@ Dcol = robot.getColumn() - ball->col;
 
 						ball->dir = 180 - ball->dir;
 					}
-				}
-				else if ((int)testcol < 132)
-				{
-					if (ball->dir == 90 || ball->dir == 270)
-					{
+				} else if ((int)testcol < 132) {
+					if (ball->dir == 90 || ball->dir == 270) {
 						xi = xf = ball->col;
 						yi = yf = -1;
-					}
-					else if (ball->dir == 0 || ball->dir == 180)
-					{
+					} else if (ball->dir == 0 || ball->dir == 180) {
 						xi = xf = -1;
 						yi = yf = ball->lin;
-					}
-					else
-					{
+					} else {
 						xi = ball->col - ((91 - ball->lin) / tan((ball->dir * M_PI) / 180));
 						xf = ball->col - ((106 - ball->lin) / tan((ball->dir * M_PI) / 180));
 
@@ -910,8 +818,7 @@ Dcol = robot.getColumn() - ball->col;
 						yf = ball->lin - (tan((ball->dir * M_PI) / 180) * (106 - ball->col));
 					}
 
-					if (xi <= 106 && xi >= 91 && ball->dir < 360 && ball->dir > 180)
-					{
+					if (xi <= 106 && xi >= 91 && ball->dir < 360 && ball->dir > 180) {
 						Dlin = 91 - ball->lin;
 						Dcol = xi - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -920,9 +827,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = xi;
 
 						ball->dir = 360 - ball->dir;
-					}
-					else if (xf <= 106 && xf >= 91 && ball->dir < 180 && ball->dir > 0)
-					{
+					} else if (xf <= 106 && xf >= 91 && ball->dir < 180 && ball->dir > 0) {
 						Dlin = 106 - ball->lin;
 						Dcol = xf - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -931,9 +836,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = xf;
 
 						ball->dir = 360 - ball->dir;
-					}
-					else if (yi <= 106 && yi >= 91 && ((ball->dir < 90 && ball->dir >= 0) || (ball->dir <= 360 && ball->dir > 270)))
-					{
+					} else if (yi <= 106 && yi >= 91 && ((ball->dir < 90 && ball->dir >= 0) || (ball->dir <= 360 && ball->dir > 270))) {
 						Dlin = yi - ball->lin;
 						Dcol = 91 - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -942,9 +845,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = 90;
 
 						ball->dir = 180 - ball->dir;
-					}
-					else if (yf <= 106 && yf >= 91 && ball->dir < 270 && ball->dir > 90)
-					{
+					} else if (yf <= 106 && yf >= 91 && ball->dir < 270 && ball->dir > 90) {
 						Dlin = yf - ball->lin;
 						Dcol = 106 - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -954,21 +855,14 @@ Dcol = robot.getColumn() - ball->col;
 
 						ball->dir = 180 - ball->dir;
 					}
-				}
-				else
-				{
-					if (ball->dir == 90 || ball->dir == 270)
-					{
+				} else {
+					if (ball->dir == 90 || ball->dir == 270) {
 						xi = xf = ball->col;
 						yi = yf = -1;
-					}
-					else if (ball->dir == 0 || ball->dir == 180)
-					{
+					} else if (ball->dir == 0 || ball->dir == 180) {
 						xi = xf = -1;
 						yi = yf = ball->lin;
-					}
-					else
-					{
+					} else {
 						xi = ball->col - ((91 - ball->lin) / tan((ball->dir * M_PI) / 180));
 						xf = ball->col - ((106 - ball->lin) / tan((ball->dir * M_PI) / 180));
 
@@ -976,8 +870,7 @@ Dcol = robot.getColumn() - ball->col;
 						yf = ball->lin - (tan((ball->dir * M_PI) / 180) * (175 - ball->col));
 					}
 
-					if (xi <= 175 && xi >= 160 && ball->dir < 360 && ball->dir > 180)
-					{
+					if (xi <= 175 && xi >= 160 && ball->dir < 360 && ball->dir > 180) {
 						Dlin = 91 - ball->lin;
 						Dcol = xi - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -986,9 +879,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = xi;
 
 						ball->dir = 360 - ball->dir;
-					}
-					else if (xf <= 175 && xf >= 160 && ball->dir < 180 && ball->dir > 0)
-					{
+					} else if (xf <= 175 && xf >= 160 && ball->dir < 180 && ball->dir > 0) {
 						Dlin = 106 - ball->lin;
 						Dcol = xf - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -997,9 +888,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = xf;
 
 						ball->dir = 360 - ball->dir;
-					}
-					else if (yi <= 106 && yi >= 91 && ((ball->dir < 90 && ball->dir >= 0) || (ball->dir <= 360 && ball->dir > 270)))
-					{
+					} else if (yi <= 106 && yi >= 91 && ((ball->dir < 90 && ball->dir >= 0) || (ball->dir <= 360 && ball->dir > 270))) {
 						Dlin = yi - ball->lin;
 						Dcol = 160 - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -1008,9 +897,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = 159;
 
 						ball->dir = 180 - ball->dir;
-					}
-					else if (yf <= 106 && yf >= 91 && ball->dir < 270 && ball->dir > 90)
-					{
+					} else if (yf <= 106 && yf >= 91 && ball->dir < 270 && ball->dir > 90) {
 						Dlin = yf - ball->lin;
 						Dcol = 175 - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -1021,24 +908,15 @@ Dcol = robot.getColumn() - ball->col;
 						ball->dir = 180 - ball->dir;
 					}
 				}
-			}
-
-			else
-			{
-				if ((int)testcol < 66)
-				{
-					if (ball->dir == 90 || ball->dir == 270)
-					{
+			} else {
+				if ((int)testcol < 66) {
+					if (ball->dir == 90 || ball->dir == 270) {
 						xi = xf = ball->col;
 						yi = yf = -1;
-					}
-					else if (ball->dir == 0 || ball->dir == 180)
-					{
+					} else if (ball->dir == 0 || ball->dir == 180) {
 						xi = xf = -1;
 						yi = yf = ball->lin;
-					}
-					else
-					{
+					} else {
 						xi = ball->col - ((160 - ball->lin) / tan((ball->dir * M_PI) / 180));
 						xf = ball->col - ((175 - ball->lin) / tan((ball->dir * M_PI) / 180));
 
@@ -1046,8 +924,7 @@ Dcol = robot.getColumn() - ball->col;
 						yf = ball->lin - (tan((ball->dir * M_PI) / 180) * (40 - ball->col));
 					}
 
-					if (xi <= 40 && xi >= 25 && ball->dir < 360 && ball->dir > 180)
-					{
+					if (xi <= 40 && xi >= 25 && ball->dir < 360 && ball->dir > 180) {
 						Dlin = 160 - ball->lin;
 						Dcol = xi - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -1056,9 +933,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = xi;
 
 						ball->dir = 360 - ball->dir;
-					}
-					else if (xf <= 40 && xf >= 25 && ball->dir < 180 && ball->dir > 0)
-					{
+					} else if (xf <= 40 && xf >= 25 && ball->dir < 180 && ball->dir > 0) {
 						Dlin = 175 - ball->lin;
 						Dcol = xf - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -1067,9 +942,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = xf;
 
 						ball->dir = 360 - ball->dir;
-					}
-					else if (yi <= 175 && yi >= 160 && ((ball->dir < 90 && ball->dir >= 0) || (ball->dir <= 360 && ball->dir > 270)))
-					{
+					} else if (yi <= 175 && yi >= 160 && ((ball->dir < 90 && ball->dir >= 0) || (ball->dir <= 360 && ball->dir > 270))) {
 						Dlin = yi - ball->lin;
 						Dcol = 25 - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -1078,9 +951,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = 24;
 
 						ball->dir = 180 - ball->dir;
-					}
-					else if (yf <= 175 && yf >= 160 && ball->dir < 270 && ball->dir > 90)
-					{
+					} else if (yf <= 175 && yf >= 160 && ball->dir < 270 && ball->dir > 90) {
 						Dlin = yf - ball->lin;
 						Dcol = 40 - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -1090,21 +961,14 @@ Dcol = robot.getColumn() - ball->col;
 
 						ball->dir = 180 - ball->dir;
 					}
-				}
-				else if ((int)testcol < 132)
-				{
-					if (ball->dir == 90 || ball->dir == 270)
-					{
+				} else if ((int)testcol < 132) {
+					if (ball->dir == 90 || ball->dir == 270) {
 						xi = xf = ball->col;
 						yi = yf = -1;
-					}
-					else if (ball->dir == 0 || ball->dir == 180)
-					{
+					} else if (ball->dir == 0 || ball->dir == 180) {
 						xi = xf = -1;
 						yi = yf = ball->lin;
-					}
-					else
-					{
+					} else {
 						xi = ball->col - ((160 - ball->lin) / tan((ball->dir * M_PI) / 180));
 						xf = ball->col - ((175 - ball->lin) / tan((ball->dir * M_PI) / 180));
 
@@ -1112,8 +976,7 @@ Dcol = robot.getColumn() - ball->col;
 						yf = ball->lin - (tan((ball->dir * M_PI) / 180) * (106 - ball->col));
 					}
 
-					if (xi <= 106 && xi >= 91 && ball->dir < 360 && ball->dir > 180)
-					{
+					if (xi <= 106 && xi >= 91 && ball->dir < 360 && ball->dir > 180) {
 						Dlin = 160 - ball->lin;
 						Dcol = xi - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -1122,9 +985,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = xi;
 
 						ball->dir = 360 - ball->dir;
-					}
-					else if (xf <= 106 && xf >= 91 && ball->dir < 180 && ball->dir > 0)
-					{
+					} else if (xf <= 106 && xf >= 91 && ball->dir < 180 && ball->dir > 0) {
 						Dlin = 175 - ball->lin;
 						Dcol = xf - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -1133,9 +994,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = xf;
 
 						ball->dir = 360 - ball->dir;
-					}
-					else if (yi <= 175 && yi >= 160 && ((ball->dir < 90 && ball->dir >= 0) || (ball->dir <= 360 && ball->dir > 270)))
-					{
+					} else if (yi <= 175 && yi >= 160 && ((ball->dir < 90 && ball->dir >= 0) || (ball->dir <= 360 && ball->dir > 270))) {
 						Dlin = yi - ball->lin;
 						Dcol = 91 - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -1144,9 +1003,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = 90;
 
 						ball->dir = 180 - ball->dir;
-					}
-					else if (yf <= 175 && yf >= 160 && ball->dir < 270 && ball->dir > 90)
-					{
+					} else if (yf <= 175 && yf >= 160 && ball->dir < 270 && ball->dir > 90) {
 						Dlin = yf - ball->lin;
 						Dcol = 107 - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -1156,21 +1013,14 @@ Dcol = robot.getColumn() - ball->col;
 
 						ball->dir = 180 - ball->dir;
 					}
-				}
-				else
-				{
-					if (ball->dir == 90 || ball->dir == 270)
-					{
+				} else {
+					if (ball->dir == 90 || ball->dir == 270) {
 						xi = xf = ball->col;
 						yi = yf = -1;
-					}
-					else if (ball->dir == 0 || ball->dir == 180)
-					{
+					} else if (ball->dir == 0 || ball->dir == 180) {
 						xi = xf = -1;
 						yi = yf = ball->lin;
-					}
-					else
-					{
+					} else {
 						xi = ball->col - ((160 - ball->lin) / tan((ball->dir * M_PI) / 180));
 						xf = ball->col - ((175 - ball->lin) / tan((ball->dir * M_PI) / 180));
 
@@ -1178,8 +1028,7 @@ Dcol = robot.getColumn() - ball->col;
 						yf = ball->lin - (tan((ball->dir * M_PI) / 180) * (175 - ball->col));
 					}
 
-					if (xi <= 175 && xi >= 160 && ball->dir < 360 && ball->dir > 180)
-					{
+					if (xi <= 175 && xi >= 160 && ball->dir < 360 && ball->dir > 180) {
 						Dlin = 160 - ball->lin;
 						Dcol = xi - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -1188,9 +1037,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = xi;
 
 						ball->dir = 360 - ball->dir;
-					}
-					else if (xf <= 175 && xf >= 160 && ball->dir < 180 && ball->dir > 0)
-					{
+					} else if (xf <= 175 && xf >= 160 && ball->dir < 180 && ball->dir > 0) {
 						Dlin = 175 - ball->lin;
 						Dcol = xf - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -1199,9 +1046,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = xf;
 
 						ball->dir = 360 - ball->dir;
-					}
-					else if (yi <= 175 && yi >= 160 && ((ball->dir < 90 && ball->dir >= 0) || (ball->dir <= 360 && ball->dir > 270)))
-					{
+					} else if (yi <= 175 && yi >= 160 && ((ball->dir < 90 && ball->dir >= 0) || (ball->dir <= 360 && ball->dir > 270))) {
 						Dlin = yi - ball->lin;
 						Dcol = 160 - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -1210,9 +1055,7 @@ Dcol = robot.getColumn() - ball->col;
 						testcol = 159;
 
 						ball->dir = 180 - ball->dir;
-					}
-					else if (yf <= 175 && yf >= 160 && ball->dir < 270 && ball->dir > 90)
-					{
+					} else if (yf <= 175 && yf >= 160 && ball->dir < 270 && ball->dir > 90) {
 						Dlin = yf - ball->lin;
 						Dcol = 175 - ball->col;
 						Drest = 2 - sqrt((Dlin * Dlin) + (Dcol * Dcol));
@@ -1247,7 +1090,6 @@ Dcol = robot.getColumn() - ball->col;
 
 		ball->lin = testlin;
 		ball->col = testcol;
-
 
 		ball_track[(int)ball->lin][(int)ball->col] = 1;
 		env.setCell((int)ball->lin, (int)ball->col, 1);
@@ -1522,15 +1364,12 @@ struct tree* read(struct tree* pointer)
 //* RECEBE O PONTEIRO, CHAMA A FUNCAO READ, MONTA    *
 //* O INDIVIDUO E RETORNA O PONTEIRO DESSE INDIVIDUO *
 //****************************************************
-struct tree* load(struct tree* pointer)
-{
+struct tree* load(struct tree* pointer) {
 	struct tree* aux;
-
 
 	pointer = read(pointer);
 
-	if (pointer->left)
-	{
+	if(pointer->left) {
 		aux = alloc();
 
 		pointer->left = aux;
@@ -1538,11 +1377,10 @@ struct tree* load(struct tree* pointer)
 		aux->top = pointer;
 
 		aux = load(aux);
-	}
-	else pointer->left = NULL;
+	} else
+		pointer->left = NULL;
 
-	if (pointer->center)
-	{
+	if(pointer->center) {
 		aux = alloc();
 
 		pointer->center = aux;
@@ -1550,11 +1388,10 @@ struct tree* load(struct tree* pointer)
 		aux->top = pointer;
 
 		aux = load(aux);
-	}
-	else pointer->center = NULL;
+	} else
+		pointer->center = NULL;
 
-	if (pointer->right)
-	{
+	if(pointer->right) {
 		aux = alloc();
 
 		pointer->right = aux;
@@ -1562,8 +1399,8 @@ struct tree* load(struct tree* pointer)
 		aux->top = pointer;
 
 		aux = load(aux);
-	}
-	else pointer->right = NULL;
+	} else
+		pointer->right = NULL;
 
 	return(pointer);
 }
@@ -1591,8 +1428,7 @@ void initializeBall(struct ball_data* ball) {
 
 // Robot initialization now handled by Robot class
 
-void drawbox(int lin, int col, int size)
-{
+void drawbox(int lin, int col, int size) {
 	int i, j;
 
 	for (i = lin; i < (lin + size); i++)
@@ -1603,8 +1439,7 @@ void drawbox(int lin, int col, int size)
 //*****************************************
 //* DESENHA OBSTACULO NA MATRIZ DA IMAGEM *
 //*****************************************
-void drawboxim(unsigned char matriz[HEIGHT][WIDTH][3], int lin, int col, int size)
-{
+void drawboxim(unsigned char matriz[HEIGHT][WIDTH][3], int lin, int col, int size) {
 	int i, j;
 
 	for (i = lin; i < (lin + size); i++)
@@ -1612,6 +1447,28 @@ void drawboxim(unsigned char matriz[HEIGHT][WIDTH][3], int lin, int col, int siz
 		{
 			matriz[i][j][0] = matriz[i][j][1] = matriz[i][j][2] = 255;
 		}
+}
+
+/**
+ * Counts the number of existing files.
+ *
+ * @param baseName The base name of the files to check (e.g., "robot").
+ * @param extension The extension of the file to check (e.g., "txt")
+ * @return The number of existing files.
+ */
+int countExistingFiles(const std::string& baseName, const std::string& extension) {
+    int count = 0;
+    for (int i = 0;; ++i) {
+		std::stringstream ss;
+		ss << baseName << std::setfill('0') << std::setw(3) << i << extension;
+        std::ifstream file(ss.str());
+        if (!std::filesystem::exists(ss.str())) {
+            break;
+        }
+        file.close();
+        ++count;
+    }
+    return count;
 }
 
 //************************
@@ -1640,8 +1497,6 @@ int main(void)
 	struct ind x, parent[2];             //AUXILIARES DE ORGANIZACAO E CRUZAMENTO
 
 	char a[5];                           //AUXILIAR DE ORGANIZACAO
-
-	int number_of_track_files;
 
 	FILE* track_files_pointer;
 
@@ -1724,52 +1579,20 @@ int main(void)
 		}
 	}
 
-	//----------------------------------------------
-	//VERIFICA ARQUIVOS DE INDIVIDUOS QUE JA EXISTEM
-	//----------------------------------------------
-	{
-		char filename[25];
-
-		number_of_track_files = 0;
-
-		snprintf(filename, sizeof(filename), "paths/caminho%.3d.gif", number_of_track_files);
-
-		while ((track_files_pointer = fopen(filename, "r")) != NULL)
-		{
-			fclose(track_files_pointer);
-
-			number_of_track_files++;
-			snprintf(filename, sizeof(filename), "paths/caminho%.3d.gif", number_of_track_files);
-		}
-	}
-
 	//----------------------------------------
 	//VERIFICA SE JA EXISTEM ARQUIVOS DE DADOS
 	//----------------------------------------
 	{
-		char filename[20];
+		int number_of_data_files = countExistingFiles("data/data", ".txt");
 
-		i = 0;
+		std::stringstream ssFilename;
+        ssFilename << "data/data" << std::setfill('0') << std::setw(3) << number_of_data_files << "." << "txt";
 
-		snprintf(filename, sizeof(filename), "data/data%.3d.txt", i);
-
-		while ((file_pointer = fopen(filename, "r")) != NULL)
-		{
-			fclose(file_pointer);
-
-			i++;
-			snprintf(filename, sizeof(filename), "data/data%.3d.txt", i);
-		}
-
-		if ((file_pointer = fopen(filename, "w+")) == NULL)  //ARQUIVO COM DADOS DA SIMULACAO
-		{
+		if ((file_pointer = fopen(ssFilename.str().c_str(), "w+")) == NULL) {
 			printf("\n\n\tFalha ao tentar criar arquivo!!!\n\n");
 			exit(1);
-		}
-
-		else
-		{
-			fprintf(file_pointer, "ROBO SEGUIDOR v.1.063\nLuiz Carlos Maia Junior\n");
+		} else {
+			fprintf(file_pointer, "ROBO SEGUIDOR v.1.2\nLuiz Carlos Maia Junior\n");
 			fprintf(file_pointer, "GERACAO\tMEDIA\t\tMAIOR\n");
 		}
 	}
@@ -2017,7 +1840,6 @@ int main(void)
 
 		}
 
-
 		printf("\n\t\tGeracao: %d", generation);
 
 		for (num = 0; num < POPULATION; num++)
@@ -2038,8 +1860,7 @@ int main(void)
 		printf("\n\n\tMEDIA GERACAO = %3.4f, MAIOR GERACAO = %3d\n", generation_average, generation_maximum);
 
 		//IMPRIME INDIVIDUO, FITNESS E COMPLEXIDADE
-		for (i = 0; i < 10; i++)
-		{
+		for(i = 0; i < 10; i++) {
 			n = 1;
 
 			printf("\n");
@@ -2055,6 +1876,9 @@ int main(void)
 		//******************
 		//* SALVA CAMINHOS *
 		//****************** 
+		int number_of_track_files = countExistingFiles("paths/caminho", ".gif");
+		printf("Found %d track files", number_of_track_files);
+
 		printf("\n\t\tSalvando, convertendo e apagando caminhos...\n");
 		fflush(stdout);
 		{
@@ -2101,67 +1925,31 @@ int main(void)
 	fflush(file_pointer);
 	fclose(file_pointer);
 
-	//----------------------------------------------
-	//VERIFICA ARQUIVOS DE INDIVIDUOS QUE JA EXISTEM
-	//----------------------------------------------
-	{
-		char filename[20];
-
-		i = 0;
-
-		snprintf(filename, sizeof(filename), "robots/rb%.3dtr.txt", i);
-
-		while ((file_pointer = fopen(filename, "r")) != NULL)
-		{
-			fclose(file_pointer);
-
-			i++;
-			snprintf(filename, sizeof(filename), "robots/rb%.3dtr.txt", i);
-		}
-	}
-
 	//********************
 	//* SALVA INDIVIDUOS *
 	//********************
 	printf("\n\t\tSalvando individuos...\n");
 	{
-		namespace fs = std::filesystem;
-
-		/* Find first available index */
-		int start_index = 0;
-		fs::create_directories("robots"); // Ensure directory exists
-		
-		for(; start_index < 1000; start_index++) {
-			std::string filename = "robots/rb" + 
-				std::format("{:03d}tr.txt", start_index);
-			if(!fs::exists(filename)) {
-				break;
-			}
-		}
-		
-		if(start_index >= 900) {
-			printf("Warning: Maximum file index reached (999), rotating back to (0)\n");
-			start_index = 0;
-		}
-
-        if(start_index < 0) start_index = 0;  // In case no files exist yet
+		// setting the index to the first available file number
+		int index = countExistingFiles("robots/rb", "tr.txt");
 	
-		for (int robot_index = 0; robot_index < 100; robot_index++, start_index++) 
-		{
+		for(int robot_index = 0; robot_index < 100; robot_index++, index++) {
+			// rotate after 999
+			if(index >= 999)
+				index = 0;
+
 			std::ostringstream path_stream;
-			path_stream << "robots/rb" << std::setfill('0') << std::setw(3) 
-				<< start_index << "tr.txt";
+			path_stream << "robots/rb" << std::setfill('0') << std::setw(3) << index << "tr.txt";
 			std::string robot_path = path_stream.str();
 
-		if ((file_pointer = fopen(robot_path.c_str(), "w+")) != NULL)
-			{
-					save(rob[robot_index].root);
+			if((file_pointer = fopen(robot_path.c_str(), "w+")) != NULL) {
+				save(rob[robot_index].root);
 
-					n = 1;
-					fprintf(file_pointer, "\n\nLENGTH = %d\n\nFITNESS = %ld\n",
-					length(rob[robot_index].root), rob[robot_index].fitness);
-					fclose(file_pointer);
-				}
+				n = 1;
+				fprintf(file_pointer, "\n\nLENGTH = %d\n\nFITNESS = %ld\n",
+				length(rob[robot_index].root), rob[robot_index].fitness);
+				fclose(file_pointer);
+			}
         }
     }
 

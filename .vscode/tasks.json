@@ -2,17 +2,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "type": "cppbuild",
-            "label": "C/C++: clang++ build active file",
-            "command": "/opt/homebrew/opt/llvm/bin/clang++",
-            "args": [
-                "-std=c++20",
-                "-fdiagnostics-color=always",
-                "-g",
-                "${workspaceFolder}/main.cpp",
-                "-o",
-                "${workspaceFolder}/wallerlocal"
-            ],
+            "type": "shell",
+            "label": "Build with CMake",
+            "command": "./build.sh",
             "options": {
                 "cwd": "${workspaceFolder}"
             },

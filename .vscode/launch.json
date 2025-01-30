@@ -1,27 +1,16 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(lldb) Launch",
-            "type": "cppdbg",
+            "name": "Launch with CodeLLDB",
+            "type": "lldb",
             "request": "launch",
-            "program": "${workspaceFolder}/wallerlocal",
+            "program": "${workspaceFolder}/waller",
             "args": [],
-            "stopAtEntry": false,
-            "cwd": "${fileDirname}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "lldb",
-            "preLaunchTask": "C/C++: clang++ build active file",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for lldb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "Build with CMake",
+            "initCommands": [
+                "settings set target.disable-aslr false"
             ]
         }
     ]
