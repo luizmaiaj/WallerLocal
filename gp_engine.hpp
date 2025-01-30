@@ -385,7 +385,33 @@ private:
         return {std::move(offspring1), std::move(offspring2)};
     }
 
-    void mutate(Tree<T>& individual) {
+    // Generate a random subtree using the terminal and function set
+    NodePtr generate_random_subtree(size_t max_depth, 
+                                  const std::function<T()>& random_terminal,
+                                  const std::function<T()>& random_function) {
+        if (max_depth <= 1) {
+            return std::make_unique<NodeType>(random_terminal());
+        }
+
+        std::uniform_int_distribution<int> dist(0, 1);
+        if (dist(rng) == 0) {
+            return std::make_unique<NodeType>(random_terminal());
+        }
+
+        auto node = std::make_unique<NodeType>(random_function());
+        size_t num_children = node->value.children_count();
+
+        for (size_t i = 0; i < num_children; ++i) {
+            node->add_child(generate_random_subtree(max_depth - 1, random_terminal, random_function));
+        }
+
+        return node;
+    }
+
+    void mutate(Tree<T>& individual, 
+                const std::function<T()>& random_terminal = nullptr,
+                const std::function<T()>& random_function = nullptr,
+                const std::function<T()>& point_mutate = nullptr) {
         auto* node = individual.get_random_node(rng);
         if (!node) return;
 
@@ -393,11 +419,25 @@ private:
         std::uniform_int_distribution<int> mut_type(0, 2);
         switch (mut_type(rng)) {
             case 0: // Point mutation: change node's value
-                // This needs to be implemented based on the specific T type
+                if (point_mutate) {
+                    node->value = NodeType::NodeValue{point_mutate()};
+                }
                 break;
+
             case 1: // Subtree mutation: replace with new random subtree
-                // TODO: Implement subtree generation
+                if (random_terminal && random_function) {
+                    size_t remaining_depth = params.max_depth - node->depth();
+                    if (remaining_depth > 0) {
+                        auto new_subtree = generate_random_subtree(
+                            remaining_depth,
+                            random_terminal,
+                            random_function
+                        );
+                        node->replace_with(std::move(new_subtree));
+                    }
+                }
                 break;
+
             case 2: // Shrink mutation: replace function node with one of its children
                 if (node->value.is_function && !node->children.empty()) {
                     std::uniform_int_distribution<size_t> child_dist(0, node->children.size() - 1);

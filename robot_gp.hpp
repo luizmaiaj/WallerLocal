@@ -3,6 +3,12 @@
 
 #include "gp_engine.hpp"
 #include "robot.h"
+
+struct ball_data {
+    int dir;
+    double lin;
+    double col;
+};
 #include <variant>
 
 namespace robot_gp {
